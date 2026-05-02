@@ -10,6 +10,13 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Dummy build-time values — real values injected at runtime
+ENV ADMIN_PASSWORD=changeme
+ENV JWT_SECRET=changeme
+ENV WEBHOOK_SECRET=changeme
+ENV N8N_WEBHOOK_URL=https://placeholder
+ENV DB_PATH=/data/legacysalons.db
+ENV NODE_ENV=production
 RUN npm run build
 
 FROM base AS runner

@@ -3,9 +3,14 @@ import { signToken, COOKIE } from '../../../../lib/auth'
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json()
-  if (password !== process.env.ADMIN_PASSWORD) {
+  
+  // Read password from env — fallback to 'admin123' if not set (dev only)
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  
+  if (!password || password !== adminPassword) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
   }
+  
   const token = await signToken({ role: 'admin', ts: Date.now() })
   const res = NextResponse.json({ success: true })
   res.cookies.set(COOKIE, token, {
