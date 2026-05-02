@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
-import { getDb } from '@/lib/db'
+import { getSession } from '../../../lib/auth'
+import { getDb } from '../../../lib/db'
 import { v4 as uuidv4 } from 'uuid'
 
 function getCurrentWeekBounds() {

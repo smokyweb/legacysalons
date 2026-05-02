@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getDb } from '../../../../lib/db'
 
 type Payment = { name: string; amount: string | number; date: string; paymentApp: string }
 
