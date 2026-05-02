@@ -30,19 +30,29 @@ export async function POST() {
   `).run(runId, Date.now(), week_start, week_end)
 
   const webhookUrl = process.env.N8N_WEBHOOK_URL
-  const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/results`
+  const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://legacy.bluesapps.com'}/api/webhook/results`
 
-  try {
-    await fetch(webhookUrl!, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ runId, callbackUrl, week_start, week_end }),
+  // Fire-and-forget — don't await n8n's full response (it runs for 30-60s)
+  // Use AbortController with short timeout just to send the request
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s to initiate connection
+
+  fetch(webhookUrl!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ runId, callbackUrl, week_start, week_end }),
+    signal: controller.signal,
+  })
+    .then(() => clearTimeout(timeoutId))
+    .catch(err => {
+      clearTimeout(timeoutId)
+      // AbortError is expected — n8n accepted the request but is still processing
+      if (err?.name !== 'AbortError') {
+        console.error('n8n webhook error:', err?.message)
+        db.prepare(`UPDATE runs SET status = 'error' WHERE id = ?`).run(runId)
+      }
     })
-  } catch (e) {
-    console.error('Failed to trigger n8n webhook:', e)
-    db.prepare(`UPDATE runs SET status = 'error' WHERE id = ?`).run(runId)
-    return NextResponse.json({ error: 'Failed to trigger workflow' }, { status: 500 })
-  }
 
+  // Return immediately — the site polls /api/runs/:id for completion
   return NextResponse.json({ status: 'triggered', runId })
 }
