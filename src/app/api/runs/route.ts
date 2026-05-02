@@ -8,5 +8,12 @@ export async function GET() {
 
   const db = getDb()
   const runs = db.prepare('SELECT * FROM runs ORDER BY created_at DESC').all()
-  return NextResponse.json(runs)
+  // Recalculate total_amount from actual payments for accuracy
+  const runsWithCorrectTotals = (runs as Array<Record<string, unknown>>).map((run) => {
+    const payments = db.prepare('SELECT amount FROM payments WHERE run_id = ?').all(run.id as string) as Array<{amount: number}>
+    const total = payments.reduce((s, p) => s + Number(p.amount || 0), 0)
+    const count = payments.length
+    return { ...run, total_amount: total, payment_count: count }
+  })
+  return NextResponse.json(runsWithCorrectTotals)
 }

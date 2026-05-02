@@ -201,7 +201,7 @@ export default function DashboardClient() {
                 <p className="text-slate-400 text-sm">Run on {fmtDate(activeRun.run.created_at)} · {activeRun.payments.length} payment{activeRun.payments.length !== 1 ? 's' : ''}</p>
               </div>
               <span className="bg-green-900/50 text-green-300 px-3 py-1 rounded-full text-sm font-semibold border border-green-800">
-                Total: ${activeRun.run.total_amount.toFixed(2)}
+                Total: ${activeRun.payments.reduce((s, p) => s + Number(p.amount || 0), 0).toFixed(2)}
               </span>
             </div>
             {activeRun.payments.length === 0 ? (
