@@ -1,0 +1,159 @@
+Build a Next.js admin dashboard app called "Legacy Salons Payment Dashboard".
+
+## Tech Stack
+- Next.js 14 (App Router)
+- Tailwind CSS
+- SQLite via better-sqlite3
+- JWT auth via jose
+- shadcn/ui components (or plain Tailwind if shadcn not available)
+
+## Pages & Features
+
+### 1. Login Page — /login
+- Clean, professional centered login form
+- Single password field (no username)
+- Logo/title: "Legacy Salons" at top
+- On submit: POST to /api/auth/login with { password }
+- On success: redirect to /dashboard
+- On fail: show error message "Invalid password"
+- Styling: dark navy/charcoal background, white card, elegant font
+
+### 2. Dashboard Page — /dashboard (protected)
+- Protected route — redirect to /login if not authenticated
+- Header: "Legacy Salons — Payment Dashboard" with logout button
+- **Main Action Card:**
+  - Title: "Run Weekly Payment Report"
+  - Subtitle: Shows current week dates e.g. "Week: Apr 28 – May 4, 2026"
+  - Big green "▶ Run Report" button
+  - Status indicator: idle / running / success / error
+  - When clicked: POST to /api/run-workflow
+  - Show spinner while running
+  - On success: show results table below
+  - On error: show error message in red
+
+- **Results Table** (shown after run or when viewing history):
+  - Columns: Name | Amount | Date | Payment App
+  - Striped rows, clean table styling
+  - Show which run it's from (timestamp)
+  - Show total amount at bottom
+
+- **Run History Section:**
+  - List of past runs (most recent first)
+  - Each run shows: date/time, number of payments, total amount
+  - Click any run to view its results in the table above
+
+### 3. API Routes
+
+**POST /api/auth/login**
+- Body: { password }
+- Compare against process.env.ADMIN_PASSWORD
+- On success: set httpOnly JWT cookie (7 day expiry), return { success: true }
+- On fail: return 401
+
+**POST /api/auth/logout**
+- Clear the JWT cookie, return { success: true }
+
+**GET /api/auth/me**
+- Check JWT cookie, return { authenticated: true/false }
+
+**POST /api/run-workflow**
+- Protected — check JWT cookie
+- POST to n8n webhook URL: process.env.N8N_WEBHOOK_URL
+- n8n runs async — so this endpoint just triggers n8n and returns { status: "triggered", runId }
+- Create a new run record in SQLite with status "running"
+- Return { runId }
+
+**POST /api/webhook/results**
+- This is called by n8n when the workflow finishes
+- Body: { runId, payments: [{ name, amount, date, paymentApp }] }
+- Save results to SQLite, update run status to "completed"
+- Return { success: true }
+
+**GET /api/runs**
+- Protected — check JWT cookie  
+- Return all runs from SQLite, most recent first
+- Each run: { id, createdAt, status, paymentCount, totalAmount }
+
+**GET /api/runs/[id]**
+- Protected — check JWT cookie
+- Return single run with all payment rows
+
+### 4. Database Schema (SQLite)
+
+```sql
+CREATE TABLE runs (
+  id TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'running',
+  payment_count INTEGER DEFAULT 0,
+  total_amount REAL DEFAULT 0,
+  week_start TEXT,
+  week_end TEXT
+);
+
+CREATE TABLE payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id TEXT NOT NULL,
+  name TEXT,
+  amount REAL,
+  date TEXT,
+  payment_app TEXT,
+  FOREIGN KEY (run_id) REFERENCES runs(id)
+);
+```
+
+### 5. Environment Variables (create .env.local)
+```
+ADMIN_PASSWORD=admin123
+JWT_SECRET=legacy-salons-jwt-secret-change-in-prod
+N8N_WEBHOOK_URL=https://placeholder.n8n.webhook/webhook/legacy-salons
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 6. package.json dependencies
+```json
+{
+  "dependencies": {
+    "next": "14.2.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "better-sqlite3": "^9.4.3",
+    "jose": "^5.2.3",
+    "uuid": "^9.0.0",
+    "lucide-react": "^0.344.0"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/uuid": "^9.0.7",
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8"
+  }
+}
+```
+
+## Styling
+- Color palette: Deep navy (#0f172a) background, white cards, green (#16a34a) primary action, gray-100 for table rows
+- Font: System font stack, clean and professional
+- Mobile responsive
+- No external UI libraries needed — pure Tailwind is fine
+
+## Important Notes
+- Database file should be at /data/legacysalons.db (configurable via DB_PATH env var, default ./legacysalons.db for dev)
+- All API routes must validate JWT from cookie before returning data
+- The /api/webhook/results endpoint should also accept a secret token header for security: x-webhook-secret matching process.env.WEBHOOK_SECRET
+- Add WEBHOOK_SECRET=legacy-webhook-secret to .env.local
+- Create a Dockerfile for deployment:
+  - FROM node:20-alpine
+  - WORKDIR /app
+  - Copy and install deps
+  - Build Next.js
+  - Expose port 3000
+  - CMD ["node", "server.js"] or ["npm", "start"]
+  - Mount /data as volume for SQLite persistence
+
+Create all files needed for a complete, working Next.js app. Include tsconfig.json, tailwind.config.js, postcss.config.js, next.config.js, and a README.md with setup instructions.
