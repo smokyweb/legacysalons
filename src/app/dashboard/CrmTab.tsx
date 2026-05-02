@@ -5,6 +5,7 @@ type Contact = {
   id: number; created_at: number; updated_at: number; first_name: string; last_name: string | null;
   email: string | null; phone: string | null; company: string | null; stage: string;
   notes: string | null; assigned_to: string | null; deal_value: number; last_contacted: number | null;
+  likely_move_date: string | null; budget: string | null; speciality: string | null; lead_source: string | null;
 }
 type Activity = { id: number; created_at: number; type: string; content: string; status: string }
 
@@ -39,7 +40,7 @@ export default function CrmTab({ role }: { role: string }) {
   const [msgSubject, setMsgSubject] = useState('')
   const [msgSending, setMsgSending] = useState(false)
   const [msgStatus, setMsgStatus] = useState('')
-  const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', company: '', stage: 'New Lead', notes: '', deal_value: '' })
+  const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', company: '', stage: 'New Lead', notes: '', deal_value: '', likely_move_date: '', budget: '', speciality: '', lead_source: '' })
   const [saving, setSaving] = useState(false)
 
   const loadContacts = useCallback(async () => {
@@ -76,7 +77,7 @@ export default function CrmTab({ role }: { role: string }) {
     if (!newContact.first_name) return
     setSaving(true)
     const res = await fetch('/api/contacts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...newContact, deal_value: parseFloat(newContact.deal_value) || 0 }) })
-    if (res.ok) { setShowAddContact(false); setNewContact({ first_name: '', last_name: '', email: '', phone: '', company: '', stage: 'New Lead', notes: '', deal_value: '' }); loadContacts() }
+    if (res.ok) { setShowAddContact(false); setNewContact({ first_name: '', last_name: '', email: '', phone: '', company: '', stage: 'New Lead', notes: '', deal_value: '', likely_move_date: '', budget: '', speciality: '', lead_source: '' }); loadContacts() }
     setSaving(false)
   }
 
@@ -263,6 +264,25 @@ export default function CrmTab({ role }: { role: string }) {
                 </div>
               </div>
 
+              {/* Extended fields grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Likely Move Date</p>
+                  <p className="text-white text-sm">{selectedContact.likely_move_date || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Budget</p>
+                  <p className="text-white text-sm">{selectedContact.budget || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Speciality</p>
+                  <p className="text-white text-sm">{selectedContact.speciality || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Lead Source</p>
+                  <p className="text-slate-400 text-sm">{selectedContact.lead_source || '—'}</p>
+                </div>
+              </div>
               {selectedContact.notes && (
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Notes</p>
@@ -346,8 +366,12 @@ export default function CrmTab({ role }: { role: string }) {
                 { label: 'Last Name', key: 'last_name', type: 'text' },
                 { label: 'Email', key: 'email', type: 'email' },
                 { label: 'Phone', key: 'phone', type: 'tel' },
-                { label: 'Company', key: 'company', type: 'text' },
+                { label: 'Company / Salon', key: 'company', type: 'text' },
                 { label: 'Deal Value ($)', key: 'deal_value', type: 'number' },
+                { label: 'Likely Move Date', key: 'likely_move_date', type: 'date' },
+                { label: 'Budget', key: 'budget', type: 'text' },
+                { label: 'Speciality', key: 'speciality', type: 'text' },
+                { label: 'Lead Source', key: 'lead_source', type: 'text' },
               ].map(f => (
                 <div key={f.key}>
                   <label className="block text-xs font-semibold text-slate-400 mb-1.5">{f.label}</label>

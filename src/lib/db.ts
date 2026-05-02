@@ -13,6 +13,7 @@ export function getDb(): Database.Database {
   if (_db) return _db
   _db = new Database(path.resolve(DB_PATH))
   _db.pragma('journal_mode = WAL')
+
   _db.exec(`
     CREATE TABLE IF NOT EXISTS runs (
       id TEXT PRIMARY KEY,
@@ -45,7 +46,11 @@ export function getDb(): Database.Database {
       notes TEXT,
       assigned_to TEXT,
       deal_value REAL DEFAULT 0,
-      last_contacted INTEGER
+      last_contacted INTEGER,
+      likely_move_date TEXT,
+      budget TEXT,
+      speciality TEXT,
+      lead_source TEXT
     );
     CREATE TABLE IF NOT EXISTS contact_activity (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,5 +62,20 @@ export function getDb(): Database.Database {
       FOREIGN KEY (contact_id) REFERENCES contacts(id)
     );
   `)
+
+  // Migration: add new columns to existing contacts table if missing
+  const existingCols = (_db.prepare("PRAGMA table_info(contacts)").all() as Array<{name: string}>).map(c => c.name)
+  const newCols: Array<{name: string; def: string}> = [
+    { name: 'likely_move_date', def: 'TEXT' },
+    { name: 'budget', def: 'TEXT' },
+    { name: 'speciality', def: 'TEXT' },
+    { name: 'lead_source', def: 'TEXT' },
+  ]
+  for (const col of newCols) {
+    if (!existingCols.includes(col.name)) {
+      _db.exec(`ALTER TABLE contacts ADD COLUMN ${col.name} ${col.def}`)
+    }
+  }
+
   return _db
 }

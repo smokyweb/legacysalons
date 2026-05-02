@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
   const db = getDb()
-  const fields = ['first_name','last_name','email','phone','company','stage','notes','assigned_to','deal_value','last_contacted']
+  const fields = ['first_name','last_name','email','phone','company','stage','notes','assigned_to','deal_value','last_contacted','likely_move_date','budget','speciality','lead_source']
   const updates = fields.filter(f => f in body).map(f => `${f} = ?`).join(', ')
   const values = fields.filter(f => f in body).map(f => body[f])
   if (!updates) return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
