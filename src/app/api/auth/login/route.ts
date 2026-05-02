@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { signToken, COOKIE } from '../../../../lib/auth'
 
+const USERS: Record<string, { password: string; role: string; displayName: string }> = {
+  admin: { password: process.env.ADMIN_PASSWORD || 'admin123', role: 'admin', displayName: 'Admin' },
+  employee: { password: process.env.EMPLOYEE_PASSWORD || 'employee123', role: 'employee', displayName: 'Employee' },
+}
+
 export async function POST(req: NextRequest) {
-  const { password } = await req.json()
-  
-  // Read password from env — fallback to 'admin123' if not set (dev only)
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-  
-  if (!password || password !== adminPassword) {
-    return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+  const { username, password } = await req.json()
+  const user = USERS[username?.toLowerCase()]
+  if (!user || password !== user.password) {
+    return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 })
   }
-  
-  const token = await signToken({ role: 'admin', ts: Date.now() })
-  const res = NextResponse.json({ success: true })
+  const token = await signToken({ role: user.role, username: username.toLowerCase(), displayName: user.displayName, ts: Date.now() })
+  const res = NextResponse.json({ success: true, role: user.role, displayName: user.displayName })
   res.cookies.set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
