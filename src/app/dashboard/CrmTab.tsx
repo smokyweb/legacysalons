@@ -46,6 +46,7 @@ export default function CrmTab({ role }: { role: string }) {
   const [editFields, setEditFields] = useState<Partial<Contact & { deal_value: string }>>({})
   const [importing, setImporting] = useState(false)
   const [importStatus, setImportStatus] = useState('')
+  const [deduping, setDeduping] = useState(false)
 
   const loadContacts = useCallback(async () => {
     const res = await fetch('/api/contacts')
@@ -102,6 +103,20 @@ export default function CrmTab({ role }: { role: string }) {
       if (actRes.ok) { const d = await actRes.json(); setActivity(d.activity) }
     }
     setMsgSending(false)
+  }
+
+  async function removeDuplicates() {
+    if (!confirm('Remove duplicate contacts? This keeps the first occurrence of each email/name.')) return
+    setDeduping(true)
+    try {
+      const res = await fetch('/api/contacts/dedup', { method: 'POST' })
+      if (res.ok) {
+        const d = await res.json()
+        alert(`Removed ${d.removed} duplicate${d.removed !== 1 ? 's' : ''}. ${d.remaining} contacts remain.`)
+        loadContacts()
+      }
+    } catch { alert('Failed to remove duplicates') }
+    setDeduping(false)
   }
 
   async function triggerImport() {
@@ -191,6 +206,10 @@ export default function CrmTab({ role }: { role: string }) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Contact
         </button>
+        <button onClick={removeDuplicates} disabled={deduping} className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-900/50 hover:bg-red-900/70 disabled:bg-slate-600 disabled:cursor-not-allowed text-red-300 font-semibold text-sm rounded-xl transition-colors border border-red-800/50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+          {deduping ? 'Removing...' : 'Remove Duplicates'}
+        </button>
         {importStatus && <p className="text-sm text-purple-300 w-full mt-1">{importStatus}</p>}
       </div>
 
@@ -221,11 +240,16 @@ export default function CrmTab({ role }: { role: string }) {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-300 text-sm hidden md:table-cell">{c.company || '—'}</td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    {c.phone ? <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} className="text-green-400 text-sm font-medium hover:text-green-300">{c.phone}</a> : <span className="text-slate-500 text-sm">—</span>}
+                  </td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    {c.email ? <span className="text-blue-400 text-xs truncate block max-w-36">{c.email}</span> : <span className="text-slate-500 text-sm">—</span>}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STAGE_COLORS[c.stage] || 'bg-slate-700 text-slate-400'}`}>{c.stage}</span>
                   </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
+                  <td className="px-6 py-4 hidden lg:table-cell">
                     {c.budget ? <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-900/50 text-amber-300 border border-amber-700">{c.budget}</span> : <span className="text-slate-500 text-sm">—</span>}
                   </td>
                   <td className="px-6 py-4 text-slate-300 text-sm hidden lg:table-cell">{c.speciality || '—'}</td>
