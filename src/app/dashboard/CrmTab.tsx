@@ -44,6 +44,8 @@ export default function CrmTab({ role }: { role: string }) {
   const [saving, setSaving] = useState(false)
   const [editingContact, setEditingContact] = useState(false)
   const [editFields, setEditFields] = useState<Partial<Contact & { deal_value: string }>>({})
+  const [importing, setImporting] = useState(false)
+  const [importStatus, setImportStatus] = useState('')
 
   const loadContacts = useCallback(async () => {
     const res = await fetch('/api/contacts')
@@ -100,6 +102,24 @@ export default function CrmTab({ role }: { role: string }) {
       if (actRes.ok) { const d = await actRes.json(); setActivity(d.activity) }
     }
     setMsgSending(false)
+  }
+
+  async function triggerImport() {
+    setImporting(true)
+    setImportStatus('')
+    try {
+      const res = await fetch('/api/import-leads', { method: 'POST' })
+      if (res.ok) {
+        setImportStatus('Import triggered! Check back in 1-2 minutes for new leads.')
+        setTimeout(() => { loadContacts(); setImportStatus('') }, 90000)
+      } else {
+        const d = await res.json()
+        setImportStatus(d.error || 'Failed to trigger import')
+      }
+    } catch {
+      setImportStatus('Failed to connect')
+    }
+    setImporting(false)
   }
 
   async function saveEdit() {
@@ -160,10 +180,18 @@ export default function CrmTab({ role }: { role: string }) {
           <button onClick={() => setView('list')} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}>List</button>
           <button onClick={() => setView('kanban')} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${view === 'kanban' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}>Kanban</button>
         </div>
+        <button onClick={triggerImport} disabled={importing} className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl transition-colors">
+          {importing ? (
+            <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Importing...</>
+          ) : (
+            <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>Import from Gmail</>
+          )}
+        </button>
         <button onClick={() => setShowAddContact(true)} className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-semibold text-sm rounded-xl transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Contact
         </button>
+        {importStatus && <p className="text-sm text-purple-300 w-full mt-1">{importStatus}</p>}
       </div>
 
       {view === 'list' ? (
