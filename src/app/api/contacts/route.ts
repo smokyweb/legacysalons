@@ -14,14 +14,14 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
-  const { first_name, last_name, email, phone, company, stage, notes, assigned_to, deal_value, likely_move_date, budget, speciality, lead_source } = body
+  const { first_name, last_name, email, phone, company, stage, notes, assigned_to, deal_value, likely_move_date, budget, speciality, lead_source, lead_date } = body
   if (!first_name) return NextResponse.json({ error: 'first_name is required' }, { status: 400 })
   const db = getDb()
   const now = Date.now()
   const result = db.prepare(`
-    INSERT INTO contacts (created_at, updated_at, first_name, last_name, email, phone, company, stage, notes, assigned_to, deal_value, likely_move_date, budget, speciality, lead_source)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(now, now, first_name, last_name || null, email || null, phone || null, company || null, stage || 'New Lead', notes || null, assigned_to || null, deal_value || 0, likely_move_date || null, budget || null, speciality || null, lead_source || null)
+    INSERT INTO contacts (created_at, updated_at, first_name, last_name, email, phone, company, stage, notes, assigned_to, deal_value, likely_move_date, budget, speciality, lead_source, lead_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(now, now, first_name, last_name || null, email || null, phone || null, company || null, stage || 'New Lead', notes || null, assigned_to || null, deal_value || 0, likely_move_date || null, budget || null, speciality || null, lead_source || null, lead_date || null)
   const contact = db.prepare('SELECT * FROM contacts WHERE id = ?').get(result.lastInsertRowid)
   return NextResponse.json(contact, { status: 201 })
 }

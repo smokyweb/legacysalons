@@ -5,7 +5,7 @@ type Contact = {
   id: number; created_at: number; updated_at: number; first_name: string; last_name: string | null;
   email: string | null; phone: string | null; company: string | null; stage: string;
   notes: string | null; assigned_to: string | null; deal_value: number; last_contacted: number | null;
-  likely_move_date: string | null; budget: string | null; speciality: string | null; lead_source: string | null;
+  likely_move_date: string | null; budget: string | null; speciality: string | null; lead_source: string | null; lead_date: string | null;
 }
 type Activity = { id: number; created_at: number; type: string; content: string; status: string }
 
@@ -155,6 +155,7 @@ export default function CrmTab({ role }: { role: string }) {
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden md:table-cell">Company</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Stage</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Deal Value</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Lead Date</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Last Contact</th>
               <th className="px-6 py-3"></th>
             </tr></thead>
@@ -177,6 +178,7 @@ export default function CrmTab({ role }: { role: string }) {
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STAGE_COLORS[c.stage] || 'bg-slate-700 text-slate-400'}`}>{c.stage}</span>
                   </td>
                   <td className="px-6 py-4 text-green-400 font-semibold text-sm hidden lg:table-cell">{c.deal_value ? `$${Number(c.deal_value).toLocaleString()}` : '—'}</td>
+                  <td className="px-6 py-4 text-slate-400 text-sm hidden lg:table-cell">{c.lead_date || '—'}</td>
                   <td className="px-6 py-4 text-slate-400 text-sm hidden lg:table-cell">{c.last_contacted ? fmtDate(c.last_contacted) : 'Never'}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
@@ -281,6 +283,10 @@ export default function CrmTab({ role }: { role: string }) {
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Lead Source</p>
                   <p className="text-slate-400 text-sm">{selectedContact.lead_source || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Lead Date</p>
+                  <p className="text-white text-sm font-medium">{selectedContact.lead_date || '—'}</p>
                 </div>
               </div>
               {selectedContact.notes && (

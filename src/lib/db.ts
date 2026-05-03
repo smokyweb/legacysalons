@@ -50,7 +50,8 @@ export function getDb(): Database.Database {
       likely_move_date TEXT,
       budget TEXT,
       speciality TEXT,
-      lead_source TEXT
+      lead_source TEXT,
+      lead_date TEXT
     );
     CREATE TABLE IF NOT EXISTS contact_activity (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,6 +71,7 @@ export function getDb(): Database.Database {
     { name: 'budget', def: 'TEXT' },
     { name: 'speciality', def: 'TEXT' },
     { name: 'lead_source', def: 'TEXT' },
+    { name: 'lead_date', def: 'TEXT' },
   ]
   for (const col of newCols) {
     if (!existingCols.includes(col.name)) {

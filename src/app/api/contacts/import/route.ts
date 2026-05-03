@@ -12,15 +12,15 @@ export async function POST(req: NextRequest) {
   const leads: Array<{
     first_name: string; last_name?: string; email?: string; phone?: string;
     company?: string; notes?: string; speciality?: string; budget?: string;
-    likely_move_date?: string; lead_source?: string;
+    likely_move_date?: string; lead_source?: string; lead_date?: string;
   }> = Array.isArray(body) ? body : body.leads || []
 
   if (!leads.length) return NextResponse.json({ imported: 0 })
 
   const db = getDb()
   const insert = db.prepare(`
-    INSERT INTO contacts (created_at, updated_at, first_name, last_name, email, phone, company, stage, notes, speciality, budget, likely_move_date, lead_source)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'New Lead', ?, ?, ?, ?, ?)
+    INSERT INTO contacts (created_at, updated_at, first_name, last_name, email, phone, company, stage, notes, speciality, budget, likely_move_date, lead_source, lead_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'New Lead', ?, ?, ?, ?, ?, ?)
   `)
 
   let imported = 0
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         if (existing) { skipped++; continue }
       }
       const now = Date.now()
-      insert.run(now, now, lead.first_name, lead.last_name || null, lead.email || null, lead.phone || null, lead.company || null, lead.notes || null, lead.speciality || null, lead.budget || null, lead.likely_move_date || null, lead.lead_source || 'Gmail')
+      insert.run(now, now, lead.first_name, lead.last_name || null, lead.email || null, lead.phone || null, lead.company || null, lead.notes || null, lead.speciality || null, lead.budget || null, lead.likely_move_date || null, lead.lead_source || 'Gmail', lead.lead_date || null)
       imported++
     }
   })
