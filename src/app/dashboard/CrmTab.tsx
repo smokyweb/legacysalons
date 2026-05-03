@@ -154,9 +154,9 @@ export default function CrmTab({ role }: { role: string }) {
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Contact</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden md:table-cell">Company</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Stage</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Deal Value</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider hidden md:table-cell">Budget</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Speciality</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Lead Date</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Last Contact</th>
               <th className="px-6 py-3"></th>
             </tr></thead>
             <tbody className="divide-y divide-slate-700/50">
@@ -177,9 +177,11 @@ export default function CrmTab({ role }: { role: string }) {
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STAGE_COLORS[c.stage] || 'bg-slate-700 text-slate-400'}`}>{c.stage}</span>
                   </td>
-                  <td className="px-6 py-4 text-green-400 font-semibold text-sm hidden lg:table-cell">{c.deal_value ? `$${Number(c.deal_value).toLocaleString()}` : '—'}</td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    {c.budget ? <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-900/50 text-amber-300 border border-amber-700">{c.budget}</span> : <span className="text-slate-500 text-sm">—</span>}
+                  </td>
+                  <td className="px-6 py-4 text-slate-300 text-sm hidden lg:table-cell">{c.speciality || '—'}</td>
                   <td className="px-6 py-4 text-slate-400 text-sm hidden lg:table-cell">{c.lead_date || '—'}</td>
-                  <td className="px-6 py-4 text-slate-400 text-sm hidden lg:table-cell">{c.last_contacted ? fmtDate(c.last_contacted) : 'Never'}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                       {c.phone && <button onClick={() => { openContact(c); setShowMessage({ type: 'sms' }) }} title="Send SMS" className="p-1.5 text-slate-400 hover:text-green-400 hover:bg-green-900/30 rounded-lg transition-colors">
@@ -274,7 +276,9 @@ export default function CrmTab({ role }: { role: string }) {
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Budget</p>
-                  <p className="text-white text-sm">{selectedContact.budget || '—'}</p>
+                  {selectedContact.budget ? (
+                    <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-amber-900/50 text-amber-300 border border-amber-700 inline-block">{selectedContact.budget}</span>
+                  ) : <p className="text-slate-500 text-sm">Not specified</p>}
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Speciality</p>
