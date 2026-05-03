@@ -42,6 +42,8 @@ export default function CrmTab({ role }: { role: string }) {
   const [msgStatus, setMsgStatus] = useState('')
   const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', phone: '', company: '', stage: 'New Lead', notes: '', deal_value: '', likely_move_date: '', budget: '', speciality: '', lead_source: '' })
   const [saving, setSaving] = useState(false)
+  const [editingContact, setEditingContact] = useState(false)
+  const [editFields, setEditFields] = useState<Partial<Contact & { deal_value: string }>>({})
 
   const loadContacts = useCallback(async () => {
     const res = await fetch('/api/contacts')
@@ -98,6 +100,24 @@ export default function CrmTab({ role }: { role: string }) {
       if (actRes.ok) { const d = await actRes.json(); setActivity(d.activity) }
     }
     setMsgSending(false)
+  }
+
+  async function saveEdit() {
+    if (!selectedContact) return
+    setSaving(true)
+    const res = await fetch(`/api/contacts/${selectedContact.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editFields),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setSelectedContact(updated)
+      setEditingContact(false)
+      setEditFields({})
+      loadContacts()
+    }
+    setSaving(false)
   }
 
   const filtered = contacts.filter(c => {
@@ -301,7 +321,11 @@ export default function CrmTab({ role }: { role: string }) {
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
+                <button onClick={() => { setEditingContact(true); setEditFields({ budget: selectedContact.budget || '', speciality: selectedContact.speciality || '', phone: selectedContact.phone || '', likely_move_date: selectedContact.likely_move_date || '', notes: selectedContact.notes || '', lead_source: selectedContact.lead_source || '' }) }} className="flex items-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white font-semibold text-sm rounded-xl transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Edit
+                </button>
                 {selectedContact.phone && (
                   <button onClick={() => { setShowMessage({ type: 'sms' }); setMsgStatus('') }} className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-semibold text-sm rounded-xl transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
@@ -336,6 +360,39 @@ export default function CrmTab({ role }: { role: string }) {
                     </button>
                     <button onClick={() => { setShowMessage(null); setMsgContent(''); setMsgSubject(''); setMsgStatus('') }} className="text-slate-400 hover:text-white text-sm">Cancel</button>
                     {msgStatus && <span className="text-sm">{msgStatus}</span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Inline Edit Form */}
+              {editingContact && (
+                <div className="bg-slate-700/40 rounded-xl border border-slate-600 p-4 space-y-3">
+                  <h4 className="font-semibold text-white text-sm">Edit Contact</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: 'Phone', key: 'phone', type: 'tel' },
+                      { label: 'Budget (e.g. $200/week)', key: 'budget', type: 'text' },
+                      { label: 'Speciality', key: 'speciality', type: 'text' },
+                      { label: 'Lead Source', key: 'lead_source', type: 'text' },
+                      { label: 'Likely Move Date', key: 'likely_move_date', type: 'date' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1">{f.label}</label>
+                        <input type={f.type} value={(editFields as Record<string,string>)[f.key] || ''} onChange={e => setEditFields(p => ({ ...p, [f.key]: e.target.value }))}
+                          className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Notes</label>
+                    <textarea value={(editFields.notes as string) || ''} onChange={e => setEditFields(p => ({ ...p, notes: e.target.value }))} rows={3}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={saveEdit} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-semibold text-sm rounded-lg transition-colors disabled:opacity-50">
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button onClick={() => { setEditingContact(false); setEditFields({}) }} className="text-slate-400 hover:text-white text-sm">Cancel</button>
                   </div>
                 </div>
               )}
