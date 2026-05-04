@@ -185,6 +185,12 @@ export function getDb(): Database.Database {
     { name: 'lead_source', def: 'TEXT' },
     { name: 'lead_date', def: 'TEXT' },
   ]
+
+  // Migration: add location column to tenants table
+  const tenantCols = (_db.prepare('PRAGMA table_info(tenants)').all() as Array<{name: string}>).map(c => c.name)
+  if (!tenantCols.includes('location')) {
+    _db.exec("ALTER TABLE tenants ADD COLUMN location TEXT DEFAULT 'Village'")
+  }
   for (const col of newCols) {
     if (!existingCols.includes(col.name)) {
       _db.exec(`ALTER TABLE contacts ADD COLUMN ${col.name} ${col.def}`)
