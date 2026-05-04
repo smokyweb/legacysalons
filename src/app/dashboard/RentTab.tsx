@@ -14,6 +14,28 @@ const BALANCE_COLORS: Record<string, string> = {
 
 function fmt$(n: number) { return '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') }
 
+type SortDir = 'asc' | 'desc'
+function useSortable<T>(data: T[], defaultKey: keyof T, defaultDir: SortDir = 'asc') {
+  const [sortKey, setSortKey] = useState<keyof T>(defaultKey)
+  const [sortDir, setSortDir] = useState<SortDir>(defaultDir)
+  const sorted = [...data].sort((a, b) => {
+    const av = a[sortKey]; const bv = b[sortKey]
+    if (av === null || av === undefined) return 1
+    if (bv === null || bv === undefined) return -1
+    const cmp = av < bv ? -1 : av > bv ? 1 : 0
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+  function toggle(key: keyof T) {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
+  function SortIcon({ col }: { col: keyof T }) {
+    if (sortKey !== col) return <span className="ml-1 text-slate-600">⇅</span>
+    return <span className="ml-1 text-blue-400">{sortDir === 'asc' ? '↑' : '↓'}</span>
+  }
+  return { sorted, toggle, SortIcon, sortKey, sortDir }
+}
+
 export default function RentTab({ role }: { role: string }) {
   const [view, setView] = useState<'dashboard' | 'tenants' | 'balances' | 'ailog'>('dashboard')
   const [dashboard, setDashboard] = useState<RentDashboard | null>(null)
@@ -66,8 +88,20 @@ export default function RentTab({ role }: { role: string }) {
     setSaving(false)
   }
 
+  const tenantSort = useSortable(tenants, 'suite' as keyof Tenant)
+  const balanceSort = useSortable(balances.filter(b => b.status === 'Active'), 'current_balance' as keyof Balance, 'desc')
   const lateBalances = balances.filter(b => b.balance_status === 'Late').sort((a,b) => b.current_balance - a.current_balance)
-  const activeBalances = balances.filter(b => b.status === 'Active').sort((a,b) => b.current_balance - a.current_balance)
+  const activeBalances = balanceSort.sorted
+  const [recentSort, setRecentSort] = useState<string>('payment_date')
+  const [recentDir, setRecentDir] = useState<'asc'|'desc'>('desc')
+  function toggleRecent(key: string) { if (recentSort === key) setRecentDir(d => d === 'asc' ? 'desc' : 'asc'); else { setRecentSort(key); setRecentDir('asc') } }
+  function RecentIcon({ col }: { col: string }) { if (recentSort !== col) return <span className="ml-1 text-slate-600">⇅</span>; return <span className="ml-1 text-blue-400">{recentDir === 'asc' ? '↑' : '↓'}</span> }
+  const sortedRecent = dashboard ? [...(dashboard.recent_payments || [])].sort((a, b) => {
+    const av = a[recentSort]; const bv = b[recentSort]
+    if (!av) return 1; if (!bv) return -1
+    const cmp = av < bv ? -1 : av > bv ? 1 : 0
+    return recentDir === 'asc' ? cmp : -cmp
+  }) : []
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">
@@ -129,11 +163,15 @@ export default function RentTab({ role }: { role: string }) {
             <div className="px-6 py-4 border-b border-slate-700"><h3 className="text-lg font-bold text-white">Recent Payments</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead><tr className="bg-slate-700/50"><th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Tenant</th><th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Suite</th><th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Date</th><th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Amount</th><th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Type</th></tr></thead>
+                <thead><tr className="bg-slate-700/50">
+                  {[['tenant_name','Tenant'],['suite','Suite'],['payment_date','Date'],['net_amount','Amount'],['payment_type','Type']].map(([k,l]) => (
+                    <th key={k} onClick={() => toggleRecent(k)} className="text-left px-6 py-3 text-xs text-slate-400 uppercase cursor-pointer hover:text-white select-none">{l}<RecentIcon col={k} /></th>
+                  ))}
+                </tr></thead>
                 <tbody className="divide-y divide-slate-700/50">
-                  {dashboard.recent_payments.length === 0 ? (
+                  {sortedRecent.length === 0 ? (
                     <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">No payments recorded yet.</td></tr>
-                  ) : dashboard.recent_payments.map((p, i) => (
+                  ) : sortedRecent.map((p, i) => (
                     <tr key={i} className="hover:bg-slate-700/30">
                       <td className="px-6 py-3 text-white">{p.tenant_name as string || p.tenant_id as string}</td>
                       <td className="px-6 py-3 text-slate-300">{p.suite as string}</td>
@@ -161,18 +199,15 @@ export default function RentTab({ role }: { role: string }) {
           <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
             <table className="w-full">
               <thead><tr className="bg-slate-700/50 border-b border-slate-700">
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Suite</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Tenant</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase hidden md:table-cell">Phone</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Weekly Rent</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Status</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase hidden lg:table-cell">Start Date</th>
+                {([['suite','Suite'],['tenant_name','Tenant'],['phone','Phone','hidden md:table-cell'],['weekly_rent','Weekly Rent'],['status','Status'],['start_date','Start Date','hidden lg:table-cell']] as [keyof Tenant, string, string?][]).map(([k,l,cls]) => (
+                  <th key={String(k)} onClick={() => tenantSort.toggle(k)} className={`text-left px-6 py-3 text-xs text-slate-400 uppercase cursor-pointer hover:text-white select-none ${cls||''}`}>{l}<tenantSort.SortIcon col={k} /></th>
+                ))}
                 <th className="px-6 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-700/50">
-                {tenants.length === 0 ? (
+                {tenantSort.sorted.length === 0 ? (
                   <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400">No tenants yet. Add one to get started.</td></tr>
-                ) : tenants.map(t => (
+                ) : tenantSort.sorted.map(t => (
                   <tr key={t.tenant_id} className="hover:bg-slate-700/30">
                     <td className="px-6 py-4 text-white font-bold">{t.suite}</td>
                     <td className="px-6 py-4">
@@ -199,13 +234,9 @@ export default function RentTab({ role }: { role: string }) {
           <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
             <table className="w-full">
               <thead><tr className="bg-slate-700/50 border-b border-slate-700">
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Tenant</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Suite</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Weekly Rent</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Paid</th>
-                <th className="text-left px-6 py-3 text-xs text-amber-400 uppercase">Balance</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Status</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase hidden lg:table-cell">Next Due</th>
+                {([['tenant_name','Tenant'],['suite','Suite'],['weekly_rent','Weekly Rent'],['total_payments','Paid'],['current_balance','Balance'],['balance_status','Status'],['next_due_date','Next Due','hidden lg:table-cell']] as [keyof Balance, string, string?][]).map(([k,l,cls]) => (
+                  <th key={String(k)} onClick={() => balanceSort.toggle(k)} className={`text-left px-6 py-3 text-xs uppercase cursor-pointer hover:text-white select-none ${k === 'current_balance' ? 'text-amber-400' : 'text-slate-400'} ${cls||''}`}>{l}<balanceSort.SortIcon col={k} /></th>
+                ))}
                 <th className="px-6 py-3"></th>
               </tr></thead>
               <tbody className="divide-y divide-slate-700/50">
