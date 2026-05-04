@@ -15,14 +15,31 @@ const BALANCE_COLORS: Record<string, string> = {
 function fmt$(n: number) { return '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') }
 
 type SortDir = 'asc' | 'desc'
+function smartCompare(av: unknown, bv: unknown): number {
+  // Both null/undefined — equal
+  if (av == null && bv == null) return 0
+  if (av == null) return 1
+  if (bv == null) return -1
+  // Numeric comparison — handles suite numbers like '1','2','10','26'
+  const an = Number(av); const bn = Number(bv)
+  if (!isNaN(an) && !isNaN(bn)) return an - bn
+  // Dollar strings like '$200.00' or '$1,234.56'
+  const as = String(av).replace(/[$,]/g, ''); const bs = String(bv).replace(/[$,]/g, '')
+  const af = parseFloat(as); const bf = parseFloat(bs)
+  if (!isNaN(af) && !isNaN(bf)) return af - bf
+  // Date strings YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(String(av)) && /^\d{4}-\d{2}-\d{2}/.test(String(bv))) {
+    return String(av).localeCompare(String(bv))
+  }
+  // Alphabetical (case-insensitive)
+  return String(av).toLowerCase().localeCompare(String(bv).toLowerCase())
+}
+
 function useSortable<T>(data: T[], defaultKey: keyof T, defaultDir: SortDir = 'asc') {
   const [sortKey, setSortKey] = useState<keyof T>(defaultKey)
   const [sortDir, setSortDir] = useState<SortDir>(defaultDir)
   const sorted = [...data].sort((a, b) => {
-    const av = a[sortKey]; const bv = b[sortKey]
-    if (av === null || av === undefined) return 1
-    if (bv === null || bv === undefined) return -1
-    const cmp = av < bv ? -1 : av > bv ? 1 : 0
+    const cmp = smartCompare(a[sortKey], b[sortKey])
     return sortDir === 'asc' ? cmp : -cmp
   })
   function toggle(key: keyof T) {
@@ -97,9 +114,7 @@ export default function RentTab({ role }: { role: string }) {
   function toggleRecent(key: string) { if (recentSort === key) setRecentDir(d => d === 'asc' ? 'desc' : 'asc'); else { setRecentSort(key); setRecentDir('asc') } }
   function RecentIcon({ col }: { col: string }) { if (recentSort !== col) return <span className="ml-1 text-slate-600">⇅</span>; return <span className="ml-1 text-blue-400">{recentDir === 'asc' ? '↑' : '↓'}</span> }
   const sortedRecent = dashboard ? [...(dashboard.recent_payments || [])].sort((a, b) => {
-    const av = a[recentSort]; const bv = b[recentSort]
-    if (!av) return 1; if (!bv) return -1
-    const cmp = av < bv ? -1 : av > bv ? 1 : 0
+    const cmp = smartCompare(a[recentSort], b[recentSort])
     return recentDir === 'asc' ? cmp : -cmp
   }) : []
 
