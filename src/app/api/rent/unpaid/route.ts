@@ -9,7 +9,12 @@ export async function GET(req: NextRequest) {
   const db = getDb()
   const url = new URL(req.url)
   const weekStart = url.searchParams.get('week_start') || (() => {
-    // Default to current week's Sunday
+    // Use the most recent week that has payments, fallback to current Sunday
+    const mostRecent = db.prepare(
+      "SELECT rent_week_start FROM rent_payments WHERE rent_week_start IS NOT NULL ORDER BY rent_week_start DESC LIMIT 1"
+    ).get() as {rent_week_start: string} | undefined
+    if (mostRecent?.rent_week_start) return mostRecent.rent_week_start
+    // Fallback: current week's Sunday
     const d = new Date()
     d.setHours(0,0,0,0)
     d.setDate(d.getDate() - d.getDay())
