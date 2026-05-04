@@ -65,16 +65,20 @@ export default function RentTab({ role }: { role: string }) {
   const [newTenant, setNewTenant] = useState({ tenant_id: '', suite: '', first_name: '', last_name: '', tenant_name: '', weekly_rent: '', start_date: '', phone: '', email: '', status: 'Active' })
   const [newPayment, setNewPayment] = useState({ payment_date: new Date().toISOString().slice(0,10), amount: '', payment_type: 'Cash App', reference: '', rent_week_start: '', notes: '' })
   const [saving, setSaving] = useState(false)
+  const [unpaidData, setUnpaidData] = useState<{total_unpaid_amount:number;unpaid_count:number;paid_count:number;total_active:number;unpaid_tenants:Array<Record<string,unknown>>} | null>(null)
+  const [showUnpaid, setShowUnpaid] = useState(false)
 
   const loadDashboard = useCallback(async () => {
-    const [d, t, b] = await Promise.all([
+    const [d, t, b, u] = await Promise.all([
       fetch('/api/rent/dashboard').then(r => r.ok ? r.json() : null),
       fetch('/api/rent/tenants').then(r => r.ok ? r.json() : []),
       fetch('/api/rent/balances').then(r => r.ok ? r.json() : []),
+      fetch('/api/rent/unpaid').then(r => r.ok ? r.json() : null),
     ])
     if (d) setDashboard(d)
     setTenants(t)
     setBalances(b)
+    if (u) setUnpaidData(u)
   }, [])
 
   const loadAiLog = useCallback(async () => {
@@ -145,6 +149,39 @@ export default function RentTab({ role }: { role: string }) {
               </div>
             ))}
           </div>
+
+          {/* This Week Unpaid Banner */}
+          {unpaidData && unpaidData.unpaid_count > 0 && (
+            <button onClick={() => setShowUnpaid(true)} className="w-full text-left group">
+              <div className="bg-gradient-to-r from-red-900/40 to-orange-900/30 rounded-2xl border border-red-700/50 px-6 py-5 hover:border-red-500/70 transition-colors">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-1">This Week's Unpaid Rent</p>
+                    <p className="text-3xl font-bold text-red-300">{fmt$(unpaidData.total_unpaid_amount)}</p>
+                    <p className="text-slate-400 text-sm mt-1">{unpaidData.unpaid_count} tenants have not paid · {unpaidData.paid_count} of {unpaidData.total_active} paid</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-red-400 group-hover:text-red-300 transition-colors">
+                    <span className="text-sm font-semibold">View Unpaid Tenants</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="mt-4 bg-slate-800/50 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full transition-all" style={{width: `${Math.round((unpaidData.paid_count / unpaidData.total_active) * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">{Math.round((unpaidData.paid_count / unpaidData.total_active) * 100)}% collection rate this week</p>
+              </div>
+            </button>
+          )}
+          {unpaidData && unpaidData.unpaid_count === 0 && (
+            <div className="bg-green-900/20 rounded-2xl border border-green-700/40 px-6 py-4 flex items-center gap-3">
+              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <div>
+                <p className="text-green-300 font-semibold">All tenants paid this week! 🎉</p>
+                <p className="text-slate-400 text-sm">{unpaidData.total_active} of {unpaidData.total_active} tenants paid</p>
+              </div>
+            </div>
+          )}
 
           {/* Late Tenants Watchlist */}
           {lateBalances.length > 0 && (
@@ -358,6 +395,58 @@ export default function RentTab({ role }: { role: string }) {
             <div className="flex gap-3 mt-6">
               <button onClick={savePayment} disabled={!newPayment.amount || saving} className="flex-1 py-3 bg-green-600 hover:bg-green-500 disabled:bg-slate-600 text-white font-bold rounded-xl">{saving ? 'Saving...' : 'Post Payment'}</button>
               <button onClick={() => setShowAddPayment(null)} className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white rounded-xl">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unpaid Tenants Modal */}
+      {showUnpaid && unpaidData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto" onClick={() => setShowUnpaid(false)}>
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-3xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-slate-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">Unpaid Rent This Week</h2>
+                <p className="text-slate-400 text-sm mt-0.5">{unpaidData.unpaid_count} tenants · Total: <span className="text-red-400 font-bold">{fmt$(unpaidData.total_unpaid_amount)}</span></p>
+              </div>
+              <button onClick={() => setShowUnpaid(false)} className="text-slate-400 hover:text-white p-1">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr className="bg-slate-700/50 border-b border-slate-700">
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Location</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Suite</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Tenant</th>
+                  <th className="text-left px-6 py-3 text-xs text-amber-400 uppercase">Weekly Rent</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase hidden md:table-cell">Phone</th>
+                  <th className="px-6 py-3"></th>
+                </tr></thead>
+                <tbody className="divide-y divide-slate-700/50">
+                  {unpaidData.unpaid_tenants.map((t, i) => (
+                    <tr key={i} className="hover:bg-slate-700/30">
+                      <td className="px-6 py-3.5">
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                          t.location === 'Cooper' ? 'bg-blue-900/50 text-blue-300' : 'bg-purple-900/50 text-purple-300'
+                        }`}>{t.location as string}</span>
+                      </td>
+                      <td className="px-6 py-3.5 text-white font-bold">{t.suite as string}</td>
+                      <td className="px-6 py-3.5 text-white">{t.tenant_name as string}</td>
+                      <td className="px-6 py-3.5 text-amber-400 font-bold">{fmt$(t.weekly_rent as number)}</td>
+                      <td className="px-6 py-3.5 text-slate-400 text-sm hidden md:table-cell">{t.phone as string || '—'}</td>
+                      <td className="px-6 py-3.5">
+                        <button onClick={() => { setShowUnpaid(false); setShowAddPayment(t.tenant_id as string) }} className="px-3 py-1 bg-green-700 hover:bg-green-600 text-white text-xs font-semibold rounded-lg">+ Payment</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot><tr className="bg-slate-700/40 border-t border-slate-700">
+                  <td colSpan={3} className="px-6 py-3 text-slate-400 font-semibold">Total Unpaid</td>
+                  <td className="px-6 py-3 text-red-400 font-bold text-lg">{fmt$(unpaidData.total_unpaid_amount)}</td>
+                  <td colSpan={2}></td>
+                </tr></tfoot>
+              </table>
             </div>
           </div>
         </div>
