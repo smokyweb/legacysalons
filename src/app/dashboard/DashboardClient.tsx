@@ -3,12 +3,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import PaymentsTab from './PaymentsTab'
 import CrmTab from './CrmTab'
+import RentTab from './RentTab'
 
 type Session = { role?: string; displayName?: string; username?: string }
 
 export default function DashboardClient({ session }: { session: Session }) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'payments' | 'crm'>('payments')
+  const [activeTab, setActiveTab] = useState<'payments' | 'crm' | 'rent'>('payments')
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -67,6 +68,21 @@ export default function DashboardClient({ session }: { session: Session }) {
                 CRM
               </span>
             </button>
+            <button
+              onClick={() => setActiveTab('rent')}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'rent'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Rent
+              </span>
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
@@ -93,6 +109,7 @@ export default function DashboardClient({ session }: { session: Session }) {
       <main>
         {activeTab === 'payments' && <PaymentsTab />}
         {activeTab === 'crm' && <CrmTab role={role} />}
+        {activeTab === 'rent' && <RentTab role={role} />}
       </main>
     </div>
   )

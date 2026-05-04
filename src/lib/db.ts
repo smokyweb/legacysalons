@@ -15,6 +15,104 @@ export function getDb(): Database.Database {
   _db.pragma('journal_mode = WAL')
 
   _db.exec(`
+    -- ===== RENT MANAGEMENT TABLES =====
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      description TEXT,
+      editable INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS tenants (
+      tenant_id TEXT PRIMARY KEY,
+      suite TEXT NOT NULL,
+      first_name TEXT,
+      last_name TEXT,
+      tenant_name TEXT,
+      weekly_rent REAL DEFAULT 0,
+      start_date TEXT,
+      end_date TEXT,
+      status TEXT DEFAULT 'Vacant',
+      phone TEXT,
+      email TEXT,
+      license_exp TEXT,
+      license_status TEXT,
+      contract_status TEXT,
+      notes TEXT,
+      created_at INTEGER DEFAULT (unixepoch() * 1000),
+      updated_at INTEGER DEFAULT (unixepoch() * 1000)
+    );
+
+    CREATE TABLE IF NOT EXISTS rent_payments (
+      payment_id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL,
+      payment_date TEXT NOT NULL,
+      amount REAL NOT NULL,
+      payment_type TEXT,
+      fee REAL DEFAULT 0,
+      net_amount REAL,
+      reference TEXT,
+      rent_week_start TEXT,
+      posted_by TEXT,
+      confidence TEXT,
+      notes TEXT,
+      created_at INTEGER DEFAULT (unixepoch() * 1000),
+      FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS free_weeks (
+      free_week_id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL,
+      type TEXT,
+      weeks_granted INTEGER DEFAULT 0,
+      date_granted TEXT,
+      apply_to_week_start TEXT,
+      weeks_used INTEGER DEFAULT 0,
+      approval_status TEXT DEFAULT 'Pending',
+      approved_by TEXT,
+      notes TEXT,
+      created_at INTEGER DEFAULT (unixepoch() * 1000),
+      FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS rent_schedule (
+      rent_id TEXT PRIMARY KEY,
+      tenant_id TEXT NOT NULL,
+      week_start TEXT NOT NULL,
+      week_end TEXT NOT NULL,
+      rent_due_date TEXT NOT NULL,
+      weekly_rent REAL DEFAULT 0,
+      free_week_credit REAL DEFAULT 0,
+      rent_charge REAL DEFAULT 0,
+      payments_applied REAL DEFAULT 0,
+      balance_before_late_fee REAL DEFAULT 0,
+      days_late INTEGER DEFAULT 0,
+      late_fee REAL DEFAULT 0,
+      total_due REAL DEFAULT 0,
+      status TEXT DEFAULT 'No Charge',
+      FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS ai_automation_log (
+      import_id TEXT PRIMARY KEY,
+      email_date TEXT,
+      from_address TEXT,
+      subject TEXT,
+      extracted_tenant TEXT,
+      extracted_amount REAL,
+      extracted_payment_type TEXT,
+      extracted_payment_date TEXT,
+      confidence TEXT,
+      review_status TEXT DEFAULT 'Needs Review',
+      posted_payment_id TEXT,
+      raw_snippet TEXT,
+      ai_notes TEXT,
+      created_at INTEGER DEFAULT (unixepoch() * 1000)
+    );
+
+    -- ===== PAYMENT TRACKING TABLES =====
+
     CREATE TABLE IF NOT EXISTS runs (
       id TEXT PRIMARY KEY,
       created_at INTEGER NOT NULL,
@@ -63,6 +161,20 @@ export function getDb(): Database.Database {
       FOREIGN KEY (contact_id) REFERENCES contacts(id)
     );
   `)
+
+  // Seed default settings if empty
+  const settingsCount = (_db.prepare('SELECT COUNT(*) as c FROM settings').get() as {c: number}).c
+  if (settingsCount === 0) {
+    const insertSetting = _db.prepare('INSERT OR IGNORE INTO settings (key, value, description, editable) VALUES (?, ?, ?, ?)')
+    const seedSettings = _db.transaction(() => {
+      insertSetting.run('late_fee_per_day', '20', 'Daily fee applied after Saturday due date when balance remains', 1)
+      insertSetting.run('card_fee_pct', '5', 'Processing fee percentage for card payments', 1)
+      insertSetting.run('model_start_sunday', '2025-10-19', 'First Sunday of rent model', 1)
+      insertSetting.run('weeks_to_generate', '12', 'Starter number of weeks generated per tenant', 1)
+      insertSetting.run('balance_threshold', '0.01', 'Late fee only when balance exceeds threshold', 1)
+    })
+    seedSettings()
+  }
 
   // Migration: add new columns to existing contacts table if missing
   const existingCols = (_db.prepare("PRAGMA table_info(contacts)").all() as Array<{name: string}>).map(c => c.name)
