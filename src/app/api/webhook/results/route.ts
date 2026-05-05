@@ -22,20 +22,22 @@ export async function POST(req: NextRequest) {
     'INSERT INTO payments (run_id, name, amount, date, payment_app) VALUES (?, ?, ?, ?, ?)'
   )
 
-  // Check for existing payment to deduplicate (name + amount + date + payment_app)
-  const checkDuplicate = db.prepare(
-    'SELECT id FROM payments WHERE run_id = ? AND name = ? AND amount = ? AND date = ?'
+  // Global dedup: check across ALL runs — same name + amount + date = already posted
+  // This prevents re-processing the same email payment in subsequent runs
+  const checkGlobalDuplicate = db.prepare(
+    'SELECT id FROM payments WHERE name = ? AND amount = ? AND date = ? LIMIT 1'
   )
 
   const safePayments: Payment[] = Array.isArray(payments) ? payments : []
   let inserted = 0
+  let skipped = 0
 
   const insertAll = db.transaction(() => {
     for (const p of safePayments) {
-      if (!p.name && !p.amount) continue // skip blank rows
-      // Check duplicate
-      const existing = checkDuplicate.get(runId, p.name || null, Number(p.amount) || 0, p.date || null)
-      if (existing) continue // skip duplicate
+      if (!p.name && !p.amount) continue
+      // Skip if this exact payment (name + amount + date) was already recorded in any previous run
+      const existing = checkGlobalDuplicate.get(p.name || null, Number(p.amount) || 0, p.date || null)
+      if (existing) { skipped++; continue }
       insertPayment.run(runId, p.name || null, Number(p.amount) || 0, p.date || null, p.paymentApp || null)
       inserted++
     }
@@ -48,5 +50,5 @@ export async function POST(req: NextRequest) {
   })
 
   insertAll()
-  return NextResponse.json({ success: true, inserted })
+  return NextResponse.json({ success: true, inserted, skipped })
 }
