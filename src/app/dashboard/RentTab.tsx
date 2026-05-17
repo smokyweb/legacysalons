@@ -54,7 +54,7 @@ function useSortable<T>(data: T[], defaultKey: keyof T, defaultDir: SortDir = 'a
 }
 
 export default function RentTab({ role }: { role: string }) {
-  const [view, setView] = useState<'dashboard' | 'tenants' | 'balances' | 'ailog'>('dashboard')
+  const [view, setView] = useState<'dashboard' | 'tenants' | 'directory' | 'balances' | 'ailog'>('dashboard')
   const [dashboard, setDashboard] = useState<RentDashboard | null>(null)
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [balances, setBalances] = useState<Balance[]>([])
@@ -126,7 +126,7 @@ export default function RentTab({ role }: { role: string }) {
     <div className="max-w-7xl mx-auto px-6 py-6">
       {/* Sub-nav */}
       <div className="flex items-center gap-1 bg-slate-700/50 rounded-xl p-1 mb-6 w-fit">
-        {[['dashboard','Dashboard'],['tenants','Tenants'],['balances','Balances'],['ailog','AI Log']].map(([v,l]) => (
+        {[['dashboard','Dashboard'],['tenants','Tenants'],['directory','Directory'],['balances','Balances'],['ailog','AI Log']].map(([v,l]) => (
           <button key={v} onClick={() => setView(v as typeof view)} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${view === v ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'}`}>{l}</button>
         ))}
       </div>
@@ -278,6 +278,70 @@ export default function RentTab({ role }: { role: string }) {
           </div>
         </div>
       )}
+
+      {/* DIRECTORY VIEW */}
+      {view === 'directory' && (() => {
+        const cooperDir = tenants.filter(t => t.location === 'Cooper' && t.status === 'Active')
+          .sort((a,b) => smartCompare(a.suite, b.suite))
+        const villageDir = tenants.filter(t => t.location === 'Village' && t.status === 'Active')
+          .sort((a,b) => smartCompare(a.suite, b.suite))
+        const totalCooper = cooperDir.reduce((s,t) => s + Number(t.weekly_rent||0), 0)
+        const totalVillage = villageDir.reduce((s,t) => s + Number(t.weekly_rent||0), 0)
+        return (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">Tenant Directory</h3>
+              <div className="text-sm text-slate-400">{tenants.filter(t=>t.status==='Active').length} active tenants</div>
+            </div>
+            {[{label:'Cooper Location', data: cooperDir, total: totalCooper, color:'text-blue-400', badge:'bg-blue-900/50 text-blue-300'},
+              {label:'Village Location', data: villageDir, total: totalVillage, color:'text-purple-400', badge:'bg-purple-900/50 text-purple-300'}].map(loc => (
+              <div key={loc.label} className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${loc.badge}`}>{loc.label}</span>
+                    <span className="text-slate-400 text-sm">{loc.data.length} tenants</span>
+                  </div>
+                  <span className="text-green-400 font-bold">{fmt$(loc.total)}/week</span>
+                </div>
+                <table className="w-full">
+                  <thead><tr className="bg-slate-700/30">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-24">Suite</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Name</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider w-32">Weekly Rate</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden md:table-cell">Phone</th>
+                  </tr></thead>
+                  <tbody className="divide-y divide-slate-700/30">
+                    {loc.data.map((t, i) => (
+                      <tr key={t.tenant_id} className={`${i % 2 === 0 ? '' : 'bg-slate-700/10'} hover:bg-slate-700/30 transition-colors`}>
+                        <td className="px-6 py-3 font-bold text-white text-sm">{t.suite}</td>
+                        <td className="px-6 py-3">
+                          <span className="text-white font-medium">{t.tenant_name || `${t.first_name||''} ${t.last_name||''}`.trim()}</span>
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className="text-amber-400 font-bold">{t.weekly_rent ? `$${Number(t.weekly_rent).toFixed(0)}` : '—'}</span>
+                        </td>
+                        <td className="px-6 py-3 hidden md:table-cell">
+                          {t.phone ? <a href={`tel:${t.phone}`} className="text-green-400 text-sm hover:text-green-300">{t.phone}</a> : <span className="text-slate-500 text-sm">—</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot><tr className="bg-slate-700/30 border-t border-slate-700">
+                    <td colSpan={2} className="px-6 py-3 text-slate-400 font-semibold text-sm">Total Weekly Revenue</td>
+                    <td className="px-6 py-3 text-green-400 font-bold">{fmt$(loc.total)}</td>
+                    <td className="hidden md:table-cell"></td>
+                  </tr></tfoot>
+                </table>
+              </div>
+            ))}
+            {/* Grand total */}
+            <div className="bg-slate-800 rounded-xl border border-slate-700 px-6 py-4 flex items-center justify-between">
+              <span className="text-white font-semibold">Combined Weekly Revenue (Both Locations)</span>
+              <span className="text-2xl font-bold text-green-400">{fmt$(totalCooper + totalVillage)}</span>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* BALANCES VIEW */}
       {view === 'balances' && (
