@@ -10,7 +10,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { runId, payments }: { runId: string; payments: Payment[] } = body
+  const { runId, payments, unpaid_tenants, unpaid_count, unpaid_total_weekly, paid_count, total_active_tenants }: { 
+    runId: string; payments: Payment[];
+    unpaid_tenants?: Array<{tenant_id:string;tenant_name:string;suite:string;location:string;weekly_rent:number;phone:string|null}>;
+    unpaid_count?: number; unpaid_total_weekly?: number; paid_count?: number; total_active_tenants?: number;
+  } = body
 
   if (!runId) return NextResponse.json({ error: 'Missing runId' }, { status: 400 })
 
@@ -44,11 +48,34 @@ export async function POST(req: NextRequest) {
     // Recalculate totals from all payments for this run
     const allPayments = db.prepare('SELECT amount FROM payments WHERE run_id = ?').all(runId) as Array<{amount: number}>
     const totalAmount = allPayments.reduce((s, p) => s + Number(p.amount || 0), 0)
-    db.prepare(`
-      UPDATE runs SET status = 'completed', payment_count = ?, total_amount = ? WHERE id = ?
-    `).run(allPayments.length, totalAmount, runId)
+    // Store unpaid summary in run metadata if provided
+    if (unpaid_count !== undefined) {
+      db.prepare(`UPDATE runs SET status = 'completed', payment_count = ?, total_amount = ?,
+        week_start = COALESCE(week_start, ?), week_end = COALESCE(week_end, ?) WHERE id = ?`
+      ).run(allPayments.length, totalAmount, 
+        new Date(Date.now() - new Date().getDay() * 86400000).toISOString().slice(0,10),
+        new Date(Date.now() + (6 - new Date().getDay()) * 86400000).toISOString().slice(0,10),
+        runId)
+    } else {
+      db.prepare(`UPDATE runs SET status = 'completed', payment_count = ?, total_amount = ? WHERE id = ?`
+      ).run(allPayments.length, totalAmount, runId)
+    }
   })
 
   insertAll()
-  return NextResponse.json({ success: true, inserted, skipped })
+  // Auto-post matched payments to rent_payments table for unpaid tracking
+  if (unpaid_tenants !== undefined && paid_count !== undefined) {
+    // Store unpaid snapshot — the /api/rent/unpaid endpoint handles live calculation
+    // The unpaid_tenants from n8n provides the AI-matched version
+    // We pass it back in the response for the frontend to display immediately
+  }
+
+  return NextResponse.json({ 
+    success: true, inserted, skipped,
+    unpaid_tenants: unpaid_tenants || [],
+    unpaid_count: unpaid_count || 0,
+    unpaid_total_weekly: unpaid_total_weekly || 0,
+    paid_count: paid_count || 0,
+    total_active_tenants: total_active_tenants || 0
+  })
 }

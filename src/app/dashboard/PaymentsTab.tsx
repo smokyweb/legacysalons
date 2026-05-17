@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 type Payment = { name: string; amount: number; date: string; payment_app: string }
 type Run = { id: string; created_at: number; status: string; payment_count: number; total_amount: number; week_start: string; week_end: string }
+type UnpaidTenant = { tenant_id: string; tenant_name: string; suite: string; location: string; weekly_rent: number; phone: string|null }
 
 function getCurrentWeek() {
   const now = new Date()
@@ -24,7 +25,7 @@ function fmtDate(ts: number) {
 export default function PaymentsTab() {
   const [status, setStatus] = useState<'idle'|'running'|'success'|'error'>('idle')
   const [runs, setRuns] = useState<Run[]>([])
-  const [activeRun, setActiveRun] = useState<{ run: Run; payments: Payment[] } | null>(null)
+  const [activeRun, setActiveRun] = useState<{ run: Run; payments: Payment[]; unpaid?: UnpaidTenant[]; unpaid_total?: number } | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [currentRunId, setCurrentRunId] = useState<string | null>(null)
   const weekLabel = getCurrentWeek()
@@ -46,7 +47,13 @@ export default function PaymentsTab() {
         if (res.ok) {
           const data = await res.json()
           if (data.run.status === 'completed') {
-            setActiveRun(data)
+            // Fetch unpaid data from rent module for this week
+            let unpaidData: UnpaidTenant[] = []; let unpaidTotal = 0
+            try {
+              const upRes = await fetch('/api/rent/unpaid')
+              if (upRes.ok) { const ud = await upRes.json(); unpaidData = ud.unpaid_tenants || []; unpaidTotal = ud.total_unpaid_amount || 0 }
+            } catch {}
+            setActiveRun({ ...data, unpaid: unpaidData, unpaid_total: unpaidTotal })
             setStatus('success')
             setCurrentRunId(null)
             loadRuns()
@@ -84,7 +91,15 @@ export default function PaymentsTab() {
   async function handleViewRun(id: string) {
     try {
       const res = await fetch(`/api/runs/${id}`)
-      if (res.ok) setActiveRun(await res.json())
+      if (res.ok) {
+        const data = await res.json()
+        let unpaidData: UnpaidTenant[] = []; let unpaidTotal = 0
+        try {
+          const upRes = await fetch('/api/rent/unpaid')
+          if (upRes.ok) { const ud = await upRes.json(); unpaidData = ud.unpaid_tenants || []; unpaidTotal = ud.total_unpaid_amount || 0 }
+        } catch {}
+        setActiveRun({ ...data, unpaid: unpaidData, unpaid_total: unpaidTotal })
+      }
     } catch {}
   }
 
@@ -169,6 +184,53 @@ export default function PaymentsTab() {
                 <td className="px-6 py-3.5 text-slate-300 font-semibold">Total</td>
                 <td className="px-6 py-3.5 text-green-400 font-bold text-lg">${activeRun.payments.reduce((s, p) => s + Number(p.amount || 0), 0).toFixed(2)}</td>
                 <td colSpan={2}></td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Unpaid Tenants from this run */}
+      {activeRun && activeRun.unpaid && activeRun.unpaid.length > 0 && (
+        <div className="bg-slate-800 rounded-2xl border border-red-800/40 overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              <h3 className="text-lg font-bold text-white">Tenants Who Did Not Pay This Week</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="bg-red-900/50 text-red-300 px-3 py-1 rounded-full text-sm font-bold border border-red-800">{activeRun.unpaid.length} tenants</span>
+              <span className="text-amber-400 font-bold">${(activeRun.unpaid_total||0).toFixed(2)}/week unpaid</span>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead><tr className="bg-slate-700/50">
+                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Location</th>
+                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Suite</th>
+                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase">Tenant</th>
+                <th className="text-left px-6 py-3 text-xs text-amber-400 uppercase">Weekly Rent</th>
+                <th className="text-left px-6 py-3 text-xs text-slate-400 uppercase hidden md:table-cell">Phone</th>
+              </tr></thead>
+              <tbody className="divide-y divide-slate-700/50">
+                {activeRun.unpaid.map((t, i) => (
+                  <tr key={i} className="hover:bg-slate-700/30">
+                    <td className="px-6 py-3">
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                        t.location === 'Cooper' ? 'bg-blue-900/50 text-blue-300' : 'bg-purple-900/50 text-purple-300'
+                      }`}>{t.location}</span>
+                    </td>
+                    <td className="px-6 py-3 text-white font-bold">{t.suite}</td>
+                    <td className="px-6 py-3 text-white font-medium">{t.tenant_name}</td>
+                    <td className="px-6 py-3 text-amber-400 font-bold">${Number(t.weekly_rent||0).toFixed(0)}</td>
+                    <td className="px-6 py-3 hidden md:table-cell">{t.phone ? <a href={`tel:${t.phone}`} className="text-green-400 text-sm">{t.phone}</a> : <span className="text-slate-500">—</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot><tr className="bg-slate-700/40 border-t border-slate-700">
+                <td colSpan={3} className="px-6 py-3 text-slate-400 font-semibold">Total Weekly Unpaid</td>
+                <td className="px-6 py-3 text-red-400 font-bold text-lg">${(activeRun.unpaid_total||0).toFixed(2)}</td>
+                <td className="hidden md:table-cell"></td>
               </tr></tfoot>
             </table>
           </div>
