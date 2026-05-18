@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 
-type Tenant = { tenant_id: string; suite: string; tenant_name: string; first_name: string; last_name: string; weekly_rent: number; status: string; phone: string; email: string; start_date: string; license_status: string; contract_status: string }
+type Tenant = { tenant_id: string; suite: string; tenant_name: string; first_name: string; last_name: string; weekly_rent: number; status: string; phone: string; email: string; start_date: string; license_status: string; contract_status: string; location: string }
 type Balance = { tenant_id: string; tenant_name: string; suite: string; weekly_rent: number; status: string; current_balance: number; days_late_max: number; balance_status: string; next_due_date: string; total_payments: number; late_fees: number }
 type RentDashboard = { active_tenants: number; vacant_suites: number; total_suites: number; total_rent_charged: number; total_payments: number; total_late_fees: number; total_outstanding: number; pending_ai_review: number; recent_payments: Array<Record<string,unknown>> }
 
