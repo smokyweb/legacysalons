@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, Sparkles } from 'lucide-react';
@@ -9,9 +10,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const router = useRouter();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
   return (
@@ -75,6 +77,9 @@ export default function LoginPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-black text-slate-900 mb-2">Welcome back</h1>
             <p className="text-slate-500">Sign in to your GlowBook account</p>
+            <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-600">
+              Demo: use any email &amp; password to enter
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -84,9 +89,8 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="demo@glowbook.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-                required
               />
             </div>
 
@@ -97,9 +101,8 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="any password"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm pr-12"
-                  required
                 />
                 <button
                   type="button"
