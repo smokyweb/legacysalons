@@ -1,0 +1,457 @@
+export interface Service {
+  id: string;
+  name: string;
+  duration: string;
+  price: number;
+  category: string;
+  description: string;
+}
+
+export interface Review {
+  id: string;
+  author: string;
+  avatar: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+export interface Pro {
+  id: string;
+  slug: string;
+  name: string;
+  specialty: string;
+  location: string;
+  city: string;
+  rating: number;
+  reviewCount: number;
+  priceRange: string;
+  image: string;
+  coverImage: string;
+  bio: string;
+  services: Service[];
+  reviews: Review[];
+  gallery: string[];
+  phone: string;
+  nextAvailable: string;
+  badge?: string;
+  featured?: boolean;
+}
+
+export interface Booking {
+  id: string;
+  clientName: string;
+  service: string;
+  date: string;
+  time: string;
+  status: 'upcoming' | 'completed' | 'cancelled' | 'no-show';
+  amount: number;
+  phone: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  lastVisit: string;
+  totalSpent: number;
+  visitCount: number;
+  avatar: string;
+  notes: string;
+  tags: string[];
+}
+
+export interface VoiceCall {
+  id: string;
+  time: string;
+  caller: string;
+  intent: string;
+  outcome: 'booked' | 'info' | 'transferred' | 'missed';
+  duration: string;
+}
+
+export const pros: Pro[] = [
+  {
+    id: '1',
+    slug: 'maya-johnson-hair',
+    name: 'Maya Johnson',
+    specialty: 'Master Colorist & Stylist',
+    location: 'Beverly Hills, CA',
+    city: 'Los Angeles',
+    rating: 4.9,
+    reviewCount: 312,
+    priceRange: '$$$',
+    image: 'https://picsum.photos/seed/maya/400/300',
+    coverImage: 'https://picsum.photos/seed/mayacover/1200/400',
+    bio: 'With 12 years of experience transforming hair at top LA salons, Maya specializes in lived-in color, balayage, and precision cuts. Featured in Vogue and Allure.',
+    phone: '(310) 555-0142',
+    nextAvailable: 'Today 3:00 PM',
+    featured: true,
+    badge: 'Top Rated',
+    services: [
+      { id: 's1', name: 'Balayage Full', duration: '3 hrs', price: 280, category: 'Color', description: 'Full balayage with toning and blowout included.' },
+      { id: 's2', name: 'Haircut & Style', duration: '1 hr', price: 85, category: 'Cut', description: 'Precision cut tailored to your face shape.' },
+      { id: 's3', name: 'Highlights + Toner', duration: '2.5 hrs', price: 220, category: 'Color', description: 'Partial or full highlights with custom toner.' },
+      { id: 's4', name: 'Deep Condition Treatment', duration: '45 min', price: 65, category: 'Treatment', description: 'Protein or moisture treatment for damaged hair.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Sarah K.', avatar: 'https://picsum.photos/seed/sarah/40/40', rating: 5, date: 'May 15, 2026', comment: 'Maya is absolutely incredible! My balayage looks like it was done in Paris.' },
+      { id: 'r2', author: 'Jessica M.', avatar: 'https://picsum.photos/seed/jessica/40/40', rating: 5, date: 'May 10, 2026', comment: 'The AI voice booking was so easy — called at midnight and had an appointment in 2 minutes!' },
+      { id: 'r3', author: 'Priya L.', avatar: 'https://picsum.photos/seed/priya/40/40', rating: 5, date: 'Apr 28, 2026', comment: 'Best colorist in LA, hands down. My hair has never looked this healthy.' },
+    ],
+    gallery: [
+      'https://picsum.photos/seed/maya1/400/400',
+      'https://picsum.photos/seed/maya2/400/500',
+      'https://picsum.photos/seed/maya3/400/350',
+      'https://picsum.photos/seed/maya4/400/450',
+      'https://picsum.photos/seed/maya5/400/380',
+      'https://picsum.photos/seed/maya6/400/420',
+    ],
+  },
+  {
+    id: '2',
+    slug: 'carlos-reyes-barber',
+    name: 'Carlos Reyes',
+    specialty: 'Precision Barber & Fade Artist',
+    location: 'Downtown Miami, FL',
+    city: 'Miami',
+    rating: 4.8,
+    reviewCount: 248,
+    priceRange: '$$',
+    image: 'https://picsum.photos/seed/carlos/400/300',
+    coverImage: 'https://picsum.photos/seed/carloscover/1200/400',
+    bio: "Miami's go-to barber for clean fades, sharp lineups, and beard sculpting. Carlos brings 8 years of barbering craft to every cut.",
+    phone: '(305) 555-0189',
+    nextAvailable: 'Tomorrow 10:00 AM',
+    services: [
+      { id: 's1', name: 'Fade + Lineup', duration: '45 min', price: 45, category: 'Cut', description: 'Signature skin fade with crisp lineup.' },
+      { id: 's2', name: 'Beard Sculpt & Shape', duration: '30 min', price: 35, category: 'Beard', description: 'Full beard shaping with hot towel finish.' },
+      { id: 's3', name: 'Full Service Cut & Beard', duration: '1 hr 15 min', price: 75, category: 'Combo', description: 'Complete haircut + beard grooming package.' },
+      { id: 's4', name: 'Kids Cut', duration: '30 min', price: 25, category: 'Cut', description: 'Patient and fun cuts for kids aged 3-12.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Marcus T.', avatar: 'https://picsum.photos/seed/marcus/40/40', rating: 5, date: 'May 18, 2026', comment: 'Best fade in Miami, no debate. Carlos is an artist.' },
+      { id: 'r2', author: 'Diego F.', avatar: 'https://picsum.photos/seed/diego/40/40', rating: 4, date: 'May 5, 2026', comment: 'Always on point. Booked through GlowBook AI voice — super convenient.' },
+    ],
+    gallery: ['https://picsum.photos/seed/carlos1/400/400', 'https://picsum.photos/seed/carlos2/400/500', 'https://picsum.photos/seed/carlos3/400/350', 'https://picsum.photos/seed/carlos4/400/450', 'https://picsum.photos/seed/carlos5/400/380', 'https://picsum.photos/seed/carlos6/400/420'],
+  },
+  {
+    id: '3',
+    slug: 'aisha-wellness-spa',
+    name: 'Aisha Okonkwo',
+    specialty: 'Luxury Spa & Wellness',
+    location: 'Midtown Manhattan, NY',
+    city: 'New York',
+    rating: 4.9,
+    reviewCount: 189,
+    priceRange: '$$$$',
+    image: 'https://picsum.photos/seed/aisha/400/300',
+    coverImage: 'https://picsum.photos/seed/aishacover/1200/400',
+    bio: 'A certified holistic wellness practitioner specializing in therapeutic massage, facials, and body treatments. Trained in Tokyo and Paris.',
+    phone: '(212) 555-0234',
+    nextAvailable: 'Today 5:00 PM',
+    badge: 'New',
+    services: [
+      { id: 's1', name: 'Swedish Massage', duration: '1 hr', price: 120, category: 'Massage', description: 'Full body relaxation massage with premium oils.' },
+      { id: 's2', name: 'Deep Tissue Massage', duration: '1 hr', price: 140, category: 'Massage', description: 'Targeted muscle therapy for chronic tension.' },
+      { id: 's3', name: 'Hydra-Glow Facial', duration: '75 min', price: 165, category: 'Facial', description: 'Advanced hydration facial with LED therapy.' },
+      { id: 's4', name: 'Full Body Scrub', duration: '1 hr', price: 110, category: 'Body', description: 'Exfoliating body treatment with tropical enzyme scrub.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Amanda R.', avatar: 'https://picsum.photos/seed/amanda/40/40', rating: 5, date: 'May 20, 2026', comment: 'The most relaxing experience I have ever had. Aisha has magic hands!' },
+    ],
+    gallery: ['https://picsum.photos/seed/aisha1/400/400', 'https://picsum.photos/seed/aisha2/400/500', 'https://picsum.photos/seed/aisha3/400/350', 'https://picsum.photos/seed/aisha4/400/450', 'https://picsum.photos/seed/aisha5/400/380', 'https://picsum.photos/seed/aisha6/400/420'],
+  },
+  {
+    id: '4',
+    slug: 'nina-nails-studio',
+    name: 'Nina Tran',
+    specialty: 'Nail Art & Gel Specialist',
+    location: 'Silver Lake, CA',
+    city: 'Los Angeles',
+    rating: 4.7,
+    reviewCount: 421,
+    priceRange: '$$',
+    image: 'https://picsum.photos/seed/nina/400/300',
+    coverImage: 'https://picsum.photos/seed/ninacover/1200/400',
+    bio: 'Award-winning nail artist known for intricate nail art, chrome nails, and press-on sets. 200k+ Instagram followers.',
+    phone: '(323) 555-0167',
+    nextAvailable: 'Tomorrow 1:00 PM',
+    services: [
+      { id: 's1', name: 'Gel Manicure', duration: '1 hr', price: 55, category: 'Nails', description: 'Long-lasting gel polish with cuticle care.' },
+      { id: 's2', name: 'Nail Art Set', duration: '1.5 hrs', price: 90, category: 'Nails', description: 'Custom nail art design, any style you want.' },
+      { id: 's3', name: 'Press-On Set', duration: '45 min', price: 75, category: 'Nails', description: 'Custom fitted press-on nails, lasts 2-3 weeks.' },
+      { id: 's4', name: 'Pedicure Deluxe', duration: '1 hr', price: 65, category: 'Nails', description: 'Spa pedicure with exfoliation and massage.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Zoe P.', avatar: 'https://picsum.photos/seed/zoe/40/40', rating: 5, date: 'May 17, 2026', comment: 'Nina is a GENIUS. My nails get compliments everywhere I go!' },
+    ],
+    gallery: ['https://picsum.photos/seed/nina1/400/400', 'https://picsum.photos/seed/nina2/400/500', 'https://picsum.photos/seed/nina3/400/350', 'https://picsum.photos/seed/nina4/400/450', 'https://picsum.photos/seed/nina5/400/380', 'https://picsum.photos/seed/nina6/400/420'],
+  },
+  {
+    id: '5',
+    slug: 'james-wellness-chicago',
+    name: 'James Carter',
+    specialty: 'Holistic Wellness Coach',
+    location: 'Lincoln Park, Chicago, IL',
+    city: 'Chicago',
+    rating: 4.8,
+    reviewCount: 156,
+    priceRange: '$$$',
+    image: 'https://picsum.photos/seed/james/400/300',
+    coverImage: 'https://picsum.photos/seed/jamescover/1200/400',
+    bio: 'Certified wellness coach and reiki practitioner helping clients find balance through holistic treatments and sound healing.',
+    phone: '(773) 555-0198',
+    nextAvailable: 'Today 4:00 PM',
+    services: [
+      { id: 's1', name: 'Reiki Healing Session', duration: '1 hr', price: 95, category: 'Wellness', description: 'Full energy balancing and chakra alignment.' },
+      { id: 's2', name: 'Sound Bath Therapy', duration: '45 min', price: 75, category: 'Wellness', description: 'Immersive sound healing with crystal singing bowls.' },
+      { id: 's3', name: 'Wellness Consultation', duration: '1 hr', price: 85, category: 'Wellness', description: 'Personalized wellness plan and lifestyle coaching.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Lisa M.', avatar: 'https://picsum.photos/seed/lisa/40/40', rating: 5, date: 'May 12, 2026', comment: 'James completely shifted my energy. I have never felt so at peace.' },
+    ],
+    gallery: ['https://picsum.photos/seed/james1/400/400', 'https://picsum.photos/seed/james2/400/500', 'https://picsum.photos/seed/james3/400/350', 'https://picsum.photos/seed/james4/400/450', 'https://picsum.photos/seed/james5/400/380', 'https://picsum.photos/seed/james6/400/420'],
+  },
+  {
+    id: '6',
+    slug: 'sofia-makeup-artist',
+    name: 'Sofia Delgado',
+    specialty: 'Bridal & Editorial MUA',
+    location: 'South Beach, Miami, FL',
+    city: 'Miami',
+    rating: 5.0,
+    reviewCount: 203,
+    priceRange: '$$$',
+    image: 'https://picsum.photos/seed/sofia/400/300',
+    coverImage: 'https://picsum.photos/seed/sofiacover/1200/400',
+    bio: 'Celebrity makeup artist with credits in Cosmopolitan and Harper\'s Bazaar. Specializing in bridal, editorial, and events.',
+    phone: '(305) 555-0221',
+    nextAvailable: 'Tomorrow 9:00 AM',
+    badge: 'Celebrity Pick',
+    services: [
+      { id: 's1', name: 'Bridal Makeup', duration: '2.5 hrs', price: 350, category: 'Makeup', description: 'Full bridal look with trial session included.' },
+      { id: 's2', name: 'Editorial Look', duration: '2 hrs', price: 280, category: 'Makeup', description: 'High-fashion, camera-ready editorial makeup.' },
+      { id: 's3', name: 'Event Glam', duration: '1.5 hrs', price: 180, category: 'Makeup', description: 'Full glam makeup for any special occasion.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Rachel B.', avatar: 'https://picsum.photos/seed/rachel/40/40', rating: 5, date: 'May 19, 2026', comment: 'Sofia made me feel like a goddess on my wedding day. Absolutely perfect!' },
+    ],
+    gallery: ['https://picsum.photos/seed/sofia1/400/400', 'https://picsum.photos/seed/sofia2/400/500', 'https://picsum.photos/seed/sofia3/400/350', 'https://picsum.photos/seed/sofia4/400/450', 'https://picsum.photos/seed/sofia5/400/380', 'https://picsum.photos/seed/sofia6/400/420'],
+  },
+  {
+    id: '7',
+    slug: 'david-skin-clinic',
+    name: 'Dr. David Kim',
+    specialty: 'Esthetician & Skin Therapist',
+    location: 'Buckhead, Atlanta, GA',
+    city: 'Atlanta',
+    rating: 4.9,
+    reviewCount: 178,
+    priceRange: '$$$',
+    image: 'https://picsum.photos/seed/david/400/300',
+    coverImage: 'https://picsum.photos/seed/davidcover/1200/400',
+    bio: 'Licensed esthetician with advanced training in Korean skincare protocols. Specializing in acne treatment and anti-aging facials.',
+    phone: '(404) 555-0256',
+    nextAvailable: 'Today 2:00 PM',
+    services: [
+      { id: 's1', name: 'Korean Glass Skin Facial', duration: '90 min', price: 175, category: 'Facial', description: 'Multi-step Korean skincare facial for luminous skin.' },
+      { id: 's2', name: 'Acne Treatment Facial', duration: '1 hr', price: 130, category: 'Facial', description: 'Targeted acne clearing treatment with extractions.' },
+      { id: 's3', name: 'Microneedling Session', duration: '1 hr', price: 250, category: 'Advanced', description: 'Collagen induction therapy for anti-aging.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Taylor A.', avatar: 'https://picsum.photos/seed/taylor/40/40', rating: 5, date: 'May 14, 2026', comment: 'My skin has completely transformed after just 3 sessions with Dr. Kim!' },
+    ],
+    gallery: ['https://picsum.photos/seed/david1/400/400', 'https://picsum.photos/seed/david2/400/500', 'https://picsum.photos/seed/david3/400/350', 'https://picsum.photos/seed/david4/400/450', 'https://picsum.photos/seed/david5/400/380', 'https://picsum.photos/seed/david6/400/420'],
+  },
+  {
+    id: '8',
+    slug: 'layla-lash-studio',
+    name: 'Layla Hassan',
+    specialty: 'Lash Artist & Brow Specialist',
+    location: 'River Oaks, Houston, TX',
+    city: 'Houston',
+    rating: 4.8,
+    reviewCount: 334,
+    priceRange: '$$',
+    image: 'https://picsum.photos/seed/layla/400/300',
+    coverImage: 'https://picsum.photos/seed/laylacover/1200/400',
+    bio: 'Certified lash technician and brow specialist. Over 5,000 sets of lashes applied.',
+    phone: '(713) 555-0187',
+    nextAvailable: 'Tomorrow 11:00 AM',
+    services: [
+      { id: 's1', name: 'Classic Lash Set', duration: '2 hrs', price: 120, category: 'Lashes', description: 'Natural-looking classic lash extension set.' },
+      { id: 's2', name: 'Volume Lash Set', duration: '2.5 hrs', price: 160, category: 'Lashes', description: 'Full volume Russian lash set for dramatic look.' },
+      { id: 's3', name: 'Lash Fill', duration: '1 hr', price: 65, category: 'Lashes', description: 'Maintenance fill for lashes 2-3 weeks old.' },
+      { id: 's4', name: 'Brow Lamination + Tint', duration: '1 hr', price: 85, category: 'Brows', description: 'Brow lamination with custom tinting for fluffy brows.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Jasmine K.', avatar: 'https://picsum.photos/seed/jasmine/40/40', rating: 5, date: 'May 16, 2026', comment: 'Layla is an absolute lash queen! My eyes look amazing!' },
+    ],
+    gallery: ['https://picsum.photos/seed/layla1/400/400', 'https://picsum.photos/seed/layla2/400/500', 'https://picsum.photos/seed/layla3/400/350', 'https://picsum.photos/seed/layla4/400/450', 'https://picsum.photos/seed/layla5/400/380', 'https://picsum.photos/seed/layla6/400/420'],
+  },
+  {
+    id: '9',
+    slug: 'marcus-hair-houston',
+    name: 'Marcus Williams',
+    specialty: 'Textured Hair Specialist',
+    location: 'Midtown Houston, TX',
+    city: 'Houston',
+    rating: 4.7,
+    reviewCount: 267,
+    priceRange: '$$',
+    image: 'https://picsum.photos/seed/marcus2/400/300',
+    coverImage: 'https://picsum.photos/seed/marcus2cover/1200/400',
+    bio: 'Curl specialist and natural hair expert with 10 years experience. Passionate about celebrating natural textures from 2A waves to 4C coils.',
+    phone: '(713) 555-0302',
+    nextAvailable: 'Today 6:00 PM',
+    services: [
+      { id: 's1', name: 'Curl Definition Treatment', duration: '2 hrs', price: 120, category: 'Treatment', description: 'Deep conditioning + curl-defining styling.' },
+      { id: 's2', name: 'Natural Hair Cut', duration: '1 hr', price: 75, category: 'Cut', description: 'Dry cut for natural textures 3A-4C.' },
+      { id: 's3', name: 'Loc Maintenance', duration: '3 hrs', price: 180, category: 'Locs', description: 'Retwist and grooming for all loc stages.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Keisha T.', avatar: 'https://picsum.photos/seed/keisha/40/40', rating: 5, date: 'May 11, 2026', comment: 'Marcus is the only person I trust with my 4C hair. Incredible!' },
+    ],
+    gallery: ['https://picsum.photos/seed/marc1/400/400', 'https://picsum.photos/seed/marc2/400/500', 'https://picsum.photos/seed/marc3/400/350', 'https://picsum.photos/seed/marc4/400/450', 'https://picsum.photos/seed/marc5/400/380', 'https://picsum.photos/seed/marc6/400/420'],
+  },
+  {
+    id: '10',
+    slug: 'elena-spa-seattle',
+    name: 'Elena Vasquez',
+    specialty: 'Medical Esthetician',
+    location: 'Capitol Hill, Seattle, WA',
+    city: 'Seattle',
+    rating: 4.9,
+    reviewCount: 145,
+    priceRange: '$$$$',
+    image: 'https://picsum.photos/seed/elena/400/300',
+    coverImage: 'https://picsum.photos/seed/elenacover/1200/400',
+    bio: 'Medical-grade skincare specialist trained in chemical peels, IPL therapy, and advanced resurfacing.',
+    phone: '(206) 555-0145',
+    nextAvailable: 'Tomorrow 9:00 AM',
+    badge: 'Medical Grade',
+    services: [
+      { id: 's1', name: 'VI Chemical Peel', duration: '45 min', price: 225, category: 'Advanced', description: 'Medical-grade peel for dramatic skin renewal.' },
+      { id: 's2', name: 'IPL Photofacial', duration: '1 hr', price: 275, category: 'Advanced', description: 'Intense pulsed light for pigmentation and redness.' },
+      { id: 's3', name: 'Dermaplaning Facial', duration: '1 hr', price: 145, category: 'Facial', description: 'Manual exfoliation + serum infusion for baby skin.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Catherine H.', avatar: 'https://picsum.photos/seed/catherine/40/40', rating: 5, date: 'May 9, 2026', comment: "Elena's VI peel took 10 years off my face. Life-changing!" },
+    ],
+    gallery: ['https://picsum.photos/seed/elena1/400/400', 'https://picsum.photos/seed/elena2/400/500', 'https://picsum.photos/seed/elena3/400/350', 'https://picsum.photos/seed/elena4/400/450', 'https://picsum.photos/seed/elena5/400/380', 'https://picsum.photos/seed/elena6/400/420'],
+  },
+  {
+    id: '11',
+    slug: 'tony-barbershop-nyc',
+    name: 'Tony Marchetti',
+    specialty: 'Master Barber & Grooming',
+    location: 'Little Italy, New York, NY',
+    city: 'New York',
+    rating: 4.8,
+    reviewCount: 389,
+    priceRange: '$',
+    image: 'https://picsum.photos/seed/tony/400/300',
+    coverImage: 'https://picsum.photos/seed/tonycover/1200/400',
+    bio: 'Third-generation barber keeping old-school Italian barbering alive with hot towel shaves and classic cuts. Open since 2004.',
+    phone: '(212) 555-0389',
+    nextAvailable: 'Today 11:00 AM',
+    services: [
+      { id: 's1', name: 'Classic Haircut', duration: '30 min', price: 30, category: 'Cut', description: 'Traditional barber haircut with hot towel finish.' },
+      { id: 's2', name: 'Hot Towel Shave', duration: '45 min', price: 40, category: 'Shave', description: 'Straight razor shave with old-world ritual.' },
+      { id: 's3', name: 'Cut + Shave Combo', duration: '1 hr 15 min', price: 65, category: 'Combo', description: 'Full service haircut and straight razor shave.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Michael B.', avatar: 'https://picsum.photos/seed/michael/40/40', rating: 5, date: 'May 18, 2026', comment: "Tony's is an institution. Best haircut in NYC, period." },
+    ],
+    gallery: ['https://picsum.photos/seed/tony1/400/400', 'https://picsum.photos/seed/tony2/400/500', 'https://picsum.photos/seed/tony3/400/350', 'https://picsum.photos/seed/tony4/400/450', 'https://picsum.photos/seed/tony5/400/380', 'https://picsum.photos/seed/tony6/400/420'],
+  },
+  {
+    id: '12',
+    slug: 'rose-threading-studio',
+    name: 'Rose Patel',
+    specialty: 'Threading & Waxing Expert',
+    location: 'Edison, NJ',
+    city: 'New Jersey',
+    rating: 4.6,
+    reviewCount: 512,
+    priceRange: '$',
+    image: 'https://picsum.photos/seed/rose/400/300',
+    coverImage: 'https://picsum.photos/seed/rosecover/1200/400',
+    bio: 'Expert threading and waxing specialist with 15 years of experience. Perfect brows guaranteed.',
+    phone: '(732) 555-0412',
+    nextAvailable: 'Today 1:00 PM',
+    services: [
+      { id: 's1', name: 'Brow Threading', duration: '10 min', price: 12, category: 'Brows', description: 'Precise brow shaping with threading technique.' },
+      { id: 's2', name: 'Full Face Threading', duration: '25 min', price: 28, category: 'Threading', description: 'Complete facial hair removal with threading.' },
+      { id: 's3', name: 'Brow + Lip Threading', duration: '15 min', price: 18, category: 'Threading', description: 'Eyebrow and lip hair removal combo.' },
+      { id: 's4', name: 'Leg Waxing', duration: '45 min', price: 55, category: 'Waxing', description: 'Full leg waxing with soothing after-care.' },
+    ],
+    reviews: [
+      { id: 'r1', author: 'Priya M.', avatar: 'https://picsum.photos/seed/priya2/40/40', rating: 5, date: 'May 20, 2026', comment: 'Rose is the fastest and most precise threader I have ever been to!' },
+    ],
+    gallery: ['https://picsum.photos/seed/rose1/400/400', 'https://picsum.photos/seed/rose2/400/500', 'https://picsum.photos/seed/rose3/400/350', 'https://picsum.photos/seed/rose4/400/450', 'https://picsum.photos/seed/rose5/400/380', 'https://picsum.photos/seed/rose6/400/420'],
+  },
+];
+
+export const bookings: Booking[] = [
+  { id: 'BK001', clientName: 'Sarah Mitchell', service: 'Balayage Full', date: 'May 21, 2026', time: '10:00 AM', status: 'upcoming', amount: 280, phone: '(555) 234-5678' },
+  { id: 'BK002', clientName: 'Jennifer Adams', service: 'Haircut & Style', date: 'May 21, 2026', time: '1:00 PM', status: 'upcoming', amount: 85, phone: '(555) 345-6789' },
+  { id: 'BK003', clientName: 'Marcus Johnson', service: 'Fade + Lineup', date: 'May 21, 2026', time: '3:00 PM', status: 'upcoming', amount: 45, phone: '(555) 456-7890' },
+  { id: 'BK004', clientName: 'Emma Davis', service: 'Gel Manicure', date: 'May 20, 2026', time: '2:00 PM', status: 'completed', amount: 55, phone: '(555) 567-8901' },
+  { id: 'BK005', clientName: 'Lisa Chen', service: 'Hydra-Glow Facial', date: 'May 20, 2026', time: '11:00 AM', status: 'completed', amount: 165, phone: '(555) 678-9012' },
+  { id: 'BK006', clientName: 'Alex Torres', service: 'Deep Tissue Massage', date: 'May 19, 2026', time: '4:00 PM', status: 'completed', amount: 140, phone: '(555) 789-0123' },
+  { id: 'BK007', clientName: 'Rachel Green', service: 'Classic Lash Set', date: 'May 19, 2026', time: '9:00 AM', status: 'completed', amount: 120, phone: '(555) 890-1234' },
+  { id: 'BK008', clientName: 'Tyler Brooks', service: 'Silk Press', date: 'May 18, 2026', time: '1:00 PM', status: 'no-show', amount: 130, phone: '(555) 901-2345' },
+  { id: 'BK009', clientName: 'Nina Walsh', service: 'Bridal Makeup', date: 'May 22, 2026', time: '8:00 AM', status: 'upcoming', amount: 350, phone: '(555) 012-3456' },
+  { id: 'BK010', clientName: 'David Park', service: 'Korean Glass Skin Facial', date: 'May 18, 2026', time: '3:00 PM', status: 'cancelled', amount: 175, phone: '(555) 123-4567' },
+];
+
+export const clients: Client[] = [
+  { id: 'C001', name: 'Sarah Mitchell', email: 'sarah@example.com', phone: '(555) 234-5678', lastVisit: 'May 21, 2026', totalSpent: 1240, visitCount: 12, avatar: 'https://picsum.photos/seed/c1/40/40', notes: 'Prefers balayage, allergic to certain peroxide.', tags: ['VIP', 'Regular'] },
+  { id: 'C002', name: 'Jennifer Adams', email: 'jennifer@example.com', phone: '(555) 345-6789', lastVisit: 'May 21, 2026', totalSpent: 680, visitCount: 8, avatar: 'https://picsum.photos/seed/c2/40/40', notes: 'Usually books on Thursday mornings.', tags: ['Regular'] },
+  { id: 'C003', name: 'Emma Davis', email: 'emma@example.com', phone: '(555) 567-8901', lastVisit: 'May 20, 2026', totalSpent: 890, visitCount: 18, avatar: 'https://picsum.photos/seed/c3/40/40', notes: 'Always gets nail art, books 2 weeks in advance.', tags: ['VIP', 'Loyal'] },
+  { id: 'C004', name: 'Lisa Chen', email: 'lisa@example.com', phone: '(555) 678-9012', lastVisit: 'May 20, 2026', totalSpent: 1650, visitCount: 11, avatar: 'https://picsum.photos/seed/c4/40/40', notes: 'Referred 5 new clients.', tags: ['VIP', 'Ambassador'] },
+  { id: 'C005', name: 'Alex Torres', email: 'alex@example.com', phone: '(555) 789-0123', lastVisit: 'May 19, 2026', totalSpent: 420, visitCount: 4, avatar: 'https://picsum.photos/seed/c5/40/40', notes: 'New client, finding their routine.', tags: ['New'] },
+  { id: 'C006', name: 'Rachel Green', email: 'rachel@example.com', phone: '(555) 890-1234', lastVisit: 'May 19, 2026', totalSpent: 960, visitCount: 9, avatar: 'https://picsum.photos/seed/c6/40/40', notes: 'Monthly lash fills, never misses.', tags: ['Regular', 'Loyal'] },
+  { id: 'C007', name: 'Nina Walsh', email: 'nina@example.com', phone: '(555) 012-3456', lastVisit: 'May 22, 2026', totalSpent: 350, visitCount: 1, avatar: 'https://picsum.photos/seed/c7/40/40', notes: 'Bridal client, wedding June 15th.', tags: ['Bridal', 'New'] },
+  { id: 'C008', name: 'Marcus Johnson', email: 'marcus@example.com', phone: '(555) 456-7890', lastVisit: 'May 21, 2026', totalSpent: 540, visitCount: 14, avatar: 'https://picsum.photos/seed/c8/40/40', notes: 'Bi-weekly cuts, always tip 20%.', tags: ['VIP', 'Regular'] },
+];
+
+export const voiceCalls: VoiceCall[] = [
+  { id: 'V001', time: '9:14 AM', caller: '(555) 234-5678', intent: 'Book haircut appointment', outcome: 'booked', duration: '1m 42s' },
+  { id: 'V002', time: '10:33 AM', caller: '(555) 876-5432', intent: 'Check availability this week', outcome: 'booked', duration: '2m 18s' },
+  { id: 'V003', time: '11:05 AM', caller: '(555) 345-6789', intent: 'Ask about balayage pricing', outcome: 'info', duration: '0m 54s' },
+  { id: 'V004', time: '12:21 PM', caller: '(555) 456-7890', intent: 'Reschedule existing appointment', outcome: 'booked', duration: '1m 31s' },
+  { id: 'V005', time: '1:47 PM', caller: '(555) 567-8901', intent: 'Urgent request, needs human', outcome: 'transferred', duration: '0m 28s' },
+  { id: 'V006', time: '2:58 PM', caller: '(555) 678-9012', intent: 'Book facial + lash combo', outcome: 'booked', duration: '2m 05s' },
+  { id: 'V007', time: '4:12 PM', caller: 'Unknown', intent: 'Unclear intent', outcome: 'missed', duration: '0m 12s' },
+  { id: 'V008', time: '5:33 PM', caller: '(555) 789-0123', intent: 'Book nail appointment for Saturday', outcome: 'booked', duration: '1m 55s' },
+];
+
+export const dashboardStats = {
+  todayAppointments: 8,
+  weekRevenue: 3240,
+  newClientsMonth: 14,
+  activeBookings: 23,
+  completionRate: 94,
+  avgRating: 4.9,
+  totalClients: 842,
+  voiceCallsToday: 8,
+  voiceBookingsToday: 5,
+};
+
+export const revenueData = [
+  { day: 'May 1', revenue: 420 },
+  { day: 'May 3', revenue: 680 },
+  { day: 'May 5', revenue: 540 },
+  { day: 'May 7', revenue: 820 },
+  { day: 'May 9', revenue: 760 },
+  { day: 'May 11', revenue: 920 },
+  { day: 'May 13', revenue: 1050 },
+  { day: 'May 15', revenue: 780 },
+  { day: 'May 17', revenue: 650 },
+  { day: 'May 19', revenue: 940 },
+  { day: 'May 21', revenue: 1120 },
+];
