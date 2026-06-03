@@ -1,0 +1,592 @@
+/**
+ * LoftLoader Pro Preview Style
+*/
+
+/**
+ * Table of Contents:
+ *
+ * 1.0 - Preview for Loader
+ * 2.0 - Preview for Ending
+ * 3.0 - Animations only for preview
+ */
+
+@import 'loftloader-mixins';
+
+
+/* ==========================================================================
+   1.0 Preview for Loader
+   ========================================================================== */
+
+body {
+    #loftloader-wrapper.loftloader-once {
+        &.loftloader-imgloading {
+            &.imgloading-vertical {
+                #loader .imgloading-container {
+                    height: 100%;
+                }
+            }
+
+            &.imgloading-horizontal {
+                #loader .imgloading-container {
+                    width: 100%;
+                }
+            }
+        }
+
+        &.loftloader-rainbow {
+            #loader span {
+                @include transform(rotate(0deg));
+            }
+        }
+
+        &.loftloader-circlefilling {
+            #loader span {
+                @include transform(scaleY(1));
+            }
+        }
+
+        &.loftloader-waterfilling {
+            #loader {
+                &:before {
+                    @include transform(scaleY(1));
+                }
+
+                span {
+                    @include transform(translateY(0));
+                }
+            }
+        }
+
+        &.loftloader-petals {
+            #loader span {
+                box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -25px 0 0 -15px currentColor,
+                    -17.5px -17.5px 0 -15px currentColor;
+            }
+        }
+    }
+
+    #loftloader-wrapper.split-diagonally {
+        .loader-bg {
+            &:before,
+            &:after {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+
+/* ==========================================================================
+   2.0 Preview for Ending
+   ========================================================================== */
+
+body:hover {
+    #loftloader-wrapper {
+        width: 0;
+        height: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all;
+        transition-delay: 1s;
+
+        &.end-split-h .loader-bg {
+            @include endBgSplitH;
+        }
+
+        &.end-split-v .loader-bg {
+            @include endBgSplitV;
+        }
+
+        &.end-fade .loader-bg {
+            @include endBgFade;
+        }
+        
+        &.end-no-animation {
+            opacity: 0;
+            transition: all 0s 0s;
+        }
+
+        &.end-up .loader-bg {
+            @include endBgUp;
+        }
+        
+        &.end-down .loader-bg {
+            @include endBgDown;
+        }
+
+        &.end-left .loader-bg {
+            @include endBgLeft;
+        }
+
+        &.end-right .loader-bg {
+            @include endBgRight;
+        }
+
+        &.end-shrink-fade .loader-bg {
+            &:before {
+                @include animation(endBgShrinkFade 0.7s linear 0.3s 1);
+            }
+        }
+
+        &.end-split-h.split-reveal-v .loader-bg {
+            @include endBgSplitRevealV;
+        }
+
+        &.end-split-v.split-reveal-h .loader-bg {
+            @include endBgSplitRevealH;
+        }
+
+        &.split-diagonally .loader-bg {
+            &:before,
+            &:after {
+                opacity: 1;
+            }
+        }
+
+        &.end-split-h.bg-split .loader-bg.bg-img.full {
+            .loader-bg-half {
+                @include endTransition;
+            }
+
+            .loader-bg-half:first-child {
+                @include transform(translateX(-100%));
+            }
+
+            .loader-bg-half:last-child {
+                @include transform(translateX(100%));
+            }
+        }
+
+        &.end-split-v.bg-split .loader-bg.bg-img.full {
+            .loader-bg-half {
+                @include endTransition;
+            }
+
+            .loader-bg-half:first-child {
+                @include transform(translateY(-100%));
+            }
+
+            .loader-bg-half:last-child {
+                @include transform(translateY(100%));
+            }
+        }
+
+        &.end-split-h.split-reveal-v.bg-split .loader-bg.bg-img {
+            .loader-bg-half {
+                @include endTransition;
+                height: 0;
+            }
+
+            .loader-bg-half:first-child {
+                @include transform(translateY(-100px));
+            }
+
+            .loader-bg-half:last-child {
+                @include transform(translateY(100px));
+            }
+        }
+
+        &.end-split-v.split-reveal-h.bg-split .loader-bg.bg-img {
+            .loader-bg-half {
+                @include endTransition;
+                width: 0;
+            }
+
+            .loader-bg-half:first-child {
+                @include transform(translateX(-100px));
+            }
+
+            .loader-bg-half:last-child {
+                @include transform(translateX(100px));
+            }
+        }
+
+        &.split-diagonally.bg-split .loader-bg.bg-img.full {
+            .loader-bg-half {
+                opacity: 1;
+            }
+        }
+    }
+
+    /**
+    *  Hide the preloader elements when hover on preview area.
+    */
+
+    #loader,
+    #loftloader-wrapper span.bar,
+    #loftloader-wrapper span.percentage,
+    .loader-message {
+        @include endLoader;
+    }
+
+    #loftloader-wrapper.inner-end-up {
+        @include endLoaderUp;
+        
+        .loader-inner {
+            @include transform(translate(-50%, calc(0px - (50vh + 100%))));
+            @include animation(innerEndUpFade .7s .6s cubic-bezier(.645, .045, .355, 1));
+            animation-fill-mode: forwards;
+        }
+
+        &.loftloader-progress .loader-inner {
+            transition-delay: 3.3s;
+        }
+    }
+
+    #loftloader-wrapper.loftloader-progress {
+        transition-delay: 4.3s;
+
+        #loader,
+        span.bar,
+        span.percentage,
+        .loader-message {
+            transition-delay: 3.3s;
+        }
+
+        span.bar span.load {
+            @include animation(loadingBar 3.6s linear 1);
+        }
+        
+        &.end-no-animation {
+            transition-delay: 3.1s;
+        }
+
+        &.end-split-h .loader-bg,
+        &.end-split-v .loader-bg {
+            &:before,
+            &:after {
+                transition-delay: 3.6s;
+            }
+        }
+
+        &.end-fade .loader-bg,
+        &.end-up .loader-bg,
+        &.end-down .loader-bg,
+        &.end-left .loader-bg,
+        &.end-right .loader-bg {
+            transition-delay: 3.6s;
+        }
+
+        &.end-shrink-fade .loader-bg {
+            &,
+            &:before {
+                animation-delay: 3.6s;
+            }
+        }
+
+        &.end-split-h,
+        &.end-split-v {
+             &.bg-split .loader-bg.bg-img .loader-bg-half {
+                transition-delay: 3.6s;
+            }
+        }
+    }
+
+    #loftloader-wrapper.loftloader-once {
+        &.loftloader-imgloading {
+            &.imgloading-vertical {
+                #loader .imgloading-container {
+                    @include animation(imgLoadingOnce 3s linear 1);
+                }
+            }
+
+            &.imgloading-horizontal {
+                #loader .imgloading-container {
+                    @include animation(imgLoadingHOnce 3s linear 1);
+                }
+            }
+        }
+
+        &.loftloader-rainbow {
+            #loader span {
+                @include animation(rainbow 3s linear 1);
+            }
+        }
+
+        &.loftloader-circlefilling {
+            #loader span {
+                @include animation(circlefill 3s linear 1);
+            }
+        }
+
+        &.loftloader-waterfilling {
+            #loader {
+                &:before {
+                    @include animation(circlefill 3s linear 1);
+                }
+                span {
+                    @include animation(waterupfill 3s linear 1);
+                }
+            }
+        }
+
+        &.loftloader-petals {
+            #loader span {
+                @include animation(petalsOnce 3s linear 1);
+            }
+        }
+    }
+}
+
+
+/* ==========================================================================
+   3.0 Animations only for preview
+   ========================================================================== */
+
+@-webkit-keyframes loadingBar {
+    0% {
+        -webkit-transform: scaleX(0);
+    }
+    80% {
+        -webkit-transform: scaleX(1);
+    }
+    100% {
+        -webkit-transform: scaleX(1);
+    }
+}
+
+@keyframes loadingBar {
+    0% {
+        transform: scaleX(0);
+    }
+    80% {
+        transform: scaleX(1);
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
+@-webkit-keyframes imgLoadingOnce {
+    0% {
+        height: 0%;
+    }
+    100% {
+        height: 100%;
+    }
+}
+
+@keyframes imgLoadingOnce {
+    0% {
+        height: 0%;
+    }
+    100% {
+        height: 100%;
+    }
+}
+
+@-webkit-keyframes imgLoadingHOnce {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+@keyframes imgLoadingHOnce {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+@-webkit-keyframes petalsOnce {
+    0% {
+        box-shadow: 0 -15px 0 -15px transparent,
+                    10.5px -10.5px 0 -15px transparent,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    12.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    10.5px -10.5px 0 -15px transparent,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    25% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    37.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    50% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    62.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    75% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    87.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -25px 0 0 -15px currentColor,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    100% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -25px 0 0 -15px currentColor,
+                    -17.5px -17.5px 0 -15px currentColor;
+    }
+}
+
+@keyframes petalsOnce {
+    0% {
+        box-shadow: 0 -15px 0 -15px transparent,
+                    10.5px -10.5px 0 -15px transparent,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    12.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    10.5px -10.5px 0 -15px transparent,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    25% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    15px 0 0 -15px transparent,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    37.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    10.5px 10.5px 0 -15px transparent,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    50% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 15px 0 -15px transparent,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    62.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -10.5px 10.5px 0 -15px transparent,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    75% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -15px 0 0 -15px transparent,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    87.5% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -25px 0 0 -15px currentColor,
+                    -10.5px -10.5px 0 -15px transparent;
+    }
+    100% {
+        box-shadow: 0 -25px 0 -15px currentColor,
+                    17.5px -17.5px 0 -15px currentColor,
+                    25px 0 0 -15px currentColor,
+                    17.5px 17.5px 0 -15px currentColor,
+                    0 25px 0 -15px currentColor,
+                    -17.5px 17.5px 0 -15px currentColor,
+                    -25px 0 0 -15px currentColor,
+                    -17.5px -17.5px 0 -15px currentColor;
+    }
+}
+
+
+.customize-partial-edit-shortcut,
+.widget .customize-partial-edit-shortcut {
+    display: none !important; // Fix layout issues caused by some theme & other 3rd-party plugins
+}

@@ -1,0 +1,316 @@
+/**
+ * LoftLoader Pro Preview Style
+*/
+/**
+ * Table of Contents:
+ *
+ * 1.0 - Preview for Loader
+ * 2.0 - Preview for Ending
+ * 3.0 - Animations only for preview
+ */
+/* ==========================================================================
+   1.0 Preview for Loader
+   ========================================================================== */
+body #loftloader-wrapper.loftloader-once.loftloader-imgloading.imgloading-vertical #loader .imgloading-container {
+  height: 100%; }
+body #loftloader-wrapper.loftloader-once.loftloader-imgloading.imgloading-horizontal #loader .imgloading-container {
+  width: 100%; }
+body #loftloader-wrapper.loftloader-once.loftloader-rainbow #loader span {
+  -webkit-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  transform: rotate(0deg); }
+body #loftloader-wrapper.loftloader-once.loftloader-circlefilling #loader span {
+  -webkit-transform: scaleY(1);
+  -ms-transform: scaleY(1);
+  transform: scaleY(1); }
+body #loftloader-wrapper.loftloader-once.loftloader-waterfilling #loader:before {
+  -webkit-transform: scaleY(1);
+  -ms-transform: scaleY(1);
+  transform: scaleY(1); }
+body #loftloader-wrapper.loftloader-once.loftloader-waterfilling #loader span {
+  -webkit-transform: translateY(0);
+  -ms-transform: translateY(0);
+  transform: translateY(0); }
+body #loftloader-wrapper.loftloader-once.loftloader-petals #loader span {
+  box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -25px 0 0 -15px currentColor, -17.5px -17.5px 0 -15px currentColor; }
+body #loftloader-wrapper.split-diagonally .loader-bg:before, body #loftloader-wrapper.split-diagonally .loader-bg:after {
+  opacity: 1; }
+
+/* ==========================================================================
+   2.0 Preview for Ending
+   ========================================================================== */
+body:hover {
+  /**
+  *  Hide the preloader elements when hover on preview area.
+  */ }
+  body:hover #loftloader-wrapper {
+    width: 0;
+    height: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all;
+    transition-delay: 1s; }
+    body:hover #loftloader-wrapper.end-split-h .loader-bg:before, body:hover #loftloader-wrapper.end-split-h .loader-bg:after {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-split-h .loader-bg:before {
+      -webkit-transform: translateX(-100%);
+      -ms-transform: translateX(-100%);
+      transform: translateX(-100%); }
+    body:hover #loftloader-wrapper.end-split-h .loader-bg:after {
+      -webkit-transform: translateX(100%);
+      -ms-transform: translateX(100%);
+      transform: translateX(100%); }
+    body:hover #loftloader-wrapper.end-split-v .loader-bg:before, body:hover #loftloader-wrapper.end-split-v .loader-bg:after {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-split-v .loader-bg:before {
+      -webkit-transform: translateY(-100%);
+      -ms-transform: translateY(-100%);
+      transform: translateY(-100%); }
+    body:hover #loftloader-wrapper.end-split-v .loader-bg:after {
+      -webkit-transform: translateY(100%);
+      -ms-transform: translateY(100%);
+      transform: translateY(100%); }
+    body:hover #loftloader-wrapper.end-fade .loader-bg {
+      opacity: 0 !important;
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-no-animation {
+      opacity: 0;
+      transition: all 0s 0s; }
+    body:hover #loftloader-wrapper.end-up .loader-bg {
+      -webkit-transform: translateY(-100%);
+      -ms-transform: translateY(-100%);
+      transform: translateY(-100%);
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-down .loader-bg {
+      -webkit-transform: translateY(100%);
+      -ms-transform: translateY(100%);
+      transform: translateY(100%);
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-left .loader-bg {
+      -webkit-transform: translateX(-100%);
+      -ms-transform: translateX(-100%);
+      transform: translateX(-100%);
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-right .loader-bg {
+      -webkit-transform: translateX(100%);
+      -ms-transform: translateX(100%);
+      transform: translateX(100%);
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-shrink-fade .loader-bg:before {
+      -webkit-animation: endBgShrinkFade 0.7s linear 0.3s 1;
+      animation: endBgShrinkFade 0.7s linear 0.3s 1; }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v .loader-bg:before, body:hover #loftloader-wrapper.end-split-h.split-reveal-v .loader-bg:after {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      height: 0; }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v .loader-bg:before {
+      -webkit-transform: translateY(-100px);
+      -ms-transform: translateY(-100px);
+      transform: translateY(-100px); }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v .loader-bg:after {
+      -webkit-transform: translateY(100px);
+      -ms-transform: translateY(100px);
+      transform: translateY(100px); }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h .loader-bg:before, body:hover #loftloader-wrapper.end-split-v.split-reveal-h .loader-bg:after {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      width: 0; }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h .loader-bg:before {
+      -webkit-transform: translateX(-100px);
+      -ms-transform: translateX(-100px);
+      transform: translateX(-100px); }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h .loader-bg:after {
+      -webkit-transform: translateX(100px);
+      -ms-transform: translateX(100px);
+      transform: translateX(100px); }
+    body:hover #loftloader-wrapper.split-diagonally .loader-bg:before, body:hover #loftloader-wrapper.split-diagonally .loader-bg:after {
+      opacity: 1; }
+    body:hover #loftloader-wrapper.end-split-h.bg-split .loader-bg.bg-img.full .loader-bg-half {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-split-h.bg-split .loader-bg.bg-img.full .loader-bg-half:first-child {
+      -webkit-transform: translateX(-100%);
+      -ms-transform: translateX(-100%);
+      transform: translateX(-100%); }
+    body:hover #loftloader-wrapper.end-split-h.bg-split .loader-bg.bg-img.full .loader-bg-half:last-child {
+      -webkit-transform: translateX(100%);
+      -ms-transform: translateX(100%);
+      transform: translateX(100%); }
+    body:hover #loftloader-wrapper.end-split-v.bg-split .loader-bg.bg-img.full .loader-bg-half {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1); }
+    body:hover #loftloader-wrapper.end-split-v.bg-split .loader-bg.bg-img.full .loader-bg-half:first-child {
+      -webkit-transform: translateY(-100%);
+      -ms-transform: translateY(-100%);
+      transform: translateY(-100%); }
+    body:hover #loftloader-wrapper.end-split-v.bg-split .loader-bg.bg-img.full .loader-bg-half:last-child {
+      -webkit-transform: translateY(100%);
+      -ms-transform: translateY(100%);
+      transform: translateY(100%); }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v.bg-split .loader-bg.bg-img .loader-bg-half {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      height: 0; }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v.bg-split .loader-bg.bg-img .loader-bg-half:first-child {
+      -webkit-transform: translateY(-100px);
+      -ms-transform: translateY(-100px);
+      transform: translateY(-100px); }
+    body:hover #loftloader-wrapper.end-split-h.split-reveal-v.bg-split .loader-bg.bg-img .loader-bg-half:last-child {
+      -webkit-transform: translateY(100px);
+      -ms-transform: translateY(100px);
+      transform: translateY(100px); }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h.bg-split .loader-bg.bg-img .loader-bg-half {
+      transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      width: 0; }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h.bg-split .loader-bg.bg-img .loader-bg-half:first-child {
+      -webkit-transform: translateX(-100px);
+      -ms-transform: translateX(-100px);
+      transform: translateX(-100px); }
+    body:hover #loftloader-wrapper.end-split-v.split-reveal-h.bg-split .loader-bg.bg-img .loader-bg-half:last-child {
+      -webkit-transform: translateX(100px);
+      -ms-transform: translateX(100px);
+      transform: translateX(100px); }
+    body:hover #loftloader-wrapper.split-diagonally.bg-split .loader-bg.bg-img.full .loader-bg-half {
+      opacity: 1; }
+  body:hover #loader,
+  body:hover #loftloader-wrapper span.bar,
+  body:hover #loftloader-wrapper span.percentage,
+  body:hover .loader-message {
+    opacity: 0;
+    transition: all 0.3s ease-out; }
+  body:hover #loftloader-wrapper.inner-end-up .loader-inner {
+    -webkit-transform: translate(-50%, -120vh);
+    -ms-transform: translate(-50%, -120vh);
+    transform: translate(-50%, -120vh);
+    transition: transform 0.7s ease-out; }
+    body:hover #loftloader-wrapper.inner-end-up .loader-inner #loader,
+    body:hover #loftloader-wrapper.inner-end-up .loader-inner span.bar,
+    body:hover #loftloader-wrapper.inner-end-up .loader-inner span.percentage,
+    body:hover #loftloader-wrapper.inner-end-up .loader-inner .loader-message {
+      opacity: 1; }
+  body:hover #loftloader-wrapper.inner-end-up .loader-inner {
+    -webkit-transform: translate(-50%, calc(0px - (50vh + 100%)));
+    -ms-transform: translate(-50%, calc(0px - (50vh + 100%)));
+    transform: translate(-50%, calc(0px - (50vh + 100%)));
+    -webkit-animation: innerEndUpFade 0.7s 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    animation: innerEndUpFade 0.7s 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    animation-fill-mode: forwards; }
+  body:hover #loftloader-wrapper.inner-end-up.loftloader-progress .loader-inner {
+    transition-delay: 3.3s; }
+  body:hover #loftloader-wrapper.loftloader-progress {
+    transition-delay: 4.3s; }
+    body:hover #loftloader-wrapper.loftloader-progress #loader,
+    body:hover #loftloader-wrapper.loftloader-progress span.bar,
+    body:hover #loftloader-wrapper.loftloader-progress span.percentage,
+    body:hover #loftloader-wrapper.loftloader-progress .loader-message {
+      transition-delay: 3.3s; }
+    body:hover #loftloader-wrapper.loftloader-progress span.bar span.load {
+      -webkit-animation: loadingBar 3.6s linear 1;
+      animation: loadingBar 3.6s linear 1; }
+    body:hover #loftloader-wrapper.loftloader-progress.end-no-animation {
+      transition-delay: 3.1s; }
+    body:hover #loftloader-wrapper.loftloader-progress.end-split-h .loader-bg:before, body:hover #loftloader-wrapper.loftloader-progress.end-split-h .loader-bg:after, body:hover #loftloader-wrapper.loftloader-progress.end-split-v .loader-bg:before, body:hover #loftloader-wrapper.loftloader-progress.end-split-v .loader-bg:after {
+      transition-delay: 3.6s; }
+    body:hover #loftloader-wrapper.loftloader-progress.end-fade .loader-bg, body:hover #loftloader-wrapper.loftloader-progress.end-up .loader-bg, body:hover #loftloader-wrapper.loftloader-progress.end-down .loader-bg, body:hover #loftloader-wrapper.loftloader-progress.end-left .loader-bg, body:hover #loftloader-wrapper.loftloader-progress.end-right .loader-bg {
+      transition-delay: 3.6s; }
+    body:hover #loftloader-wrapper.loftloader-progress.end-shrink-fade .loader-bg, body:hover #loftloader-wrapper.loftloader-progress.end-shrink-fade .loader-bg:before {
+      animation-delay: 3.6s; }
+    body:hover #loftloader-wrapper.loftloader-progress.end-split-h.bg-split .loader-bg.bg-img .loader-bg-half, body:hover #loftloader-wrapper.loftloader-progress.end-split-v.bg-split .loader-bg.bg-img .loader-bg-half {
+      transition-delay: 3.6s; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-imgloading.imgloading-vertical #loader .imgloading-container {
+    -webkit-animation: imgLoadingOnce 3s linear 1;
+    animation: imgLoadingOnce 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-imgloading.imgloading-horizontal #loader .imgloading-container {
+    -webkit-animation: imgLoadingHOnce 3s linear 1;
+    animation: imgLoadingHOnce 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-rainbow #loader span {
+    -webkit-animation: rainbow 3s linear 1;
+    animation: rainbow 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-circlefilling #loader span {
+    -webkit-animation: circlefill 3s linear 1;
+    animation: circlefill 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-waterfilling #loader:before {
+    -webkit-animation: circlefill 3s linear 1;
+    animation: circlefill 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-waterfilling #loader span {
+    -webkit-animation: waterupfill 3s linear 1;
+    animation: waterupfill 3s linear 1; }
+  body:hover #loftloader-wrapper.loftloader-once.loftloader-petals #loader span {
+    -webkit-animation: petalsOnce 3s linear 1;
+    animation: petalsOnce 3s linear 1; }
+
+/* ==========================================================================
+   3.0 Animations only for preview
+   ========================================================================== */
+@-webkit-keyframes loadingBar {
+  0% {
+    -webkit-transform: scaleX(0); }
+  80% {
+    -webkit-transform: scaleX(1); }
+  100% {
+    -webkit-transform: scaleX(1); } }
+@keyframes loadingBar {
+  0% {
+    transform: scaleX(0); }
+  80% {
+    transform: scaleX(1); }
+  100% {
+    transform: scaleX(1); } }
+@-webkit-keyframes imgLoadingOnce {
+  0% {
+    height: 0%; }
+  100% {
+    height: 100%; } }
+@keyframes imgLoadingOnce {
+  0% {
+    height: 0%; }
+  100% {
+    height: 100%; } }
+@-webkit-keyframes imgLoadingHOnce {
+  0% {
+    width: 0%; }
+  100% {
+    width: 100%; } }
+@keyframes imgLoadingHOnce {
+  0% {
+    width: 0%; }
+  100% {
+    width: 100%; } }
+@-webkit-keyframes petalsOnce {
+  0% {
+    box-shadow: 0 -15px 0 -15px transparent, 10.5px -10.5px 0 -15px transparent, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  12.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 10.5px -10.5px 0 -15px transparent, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  25% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  37.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  50% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  62.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  75% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  87.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -25px 0 0 -15px currentColor, -10.5px -10.5px 0 -15px transparent; }
+  100% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -25px 0 0 -15px currentColor, -17.5px -17.5px 0 -15px currentColor; } }
+@keyframes petalsOnce {
+  0% {
+    box-shadow: 0 -15px 0 -15px transparent, 10.5px -10.5px 0 -15px transparent, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  12.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 10.5px -10.5px 0 -15px transparent, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  25% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 15px 0 0 -15px transparent, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  37.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 10.5px 10.5px 0 -15px transparent, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  50% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 15px 0 -15px transparent, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  62.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -10.5px 10.5px 0 -15px transparent, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  75% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -15px 0 0 -15px transparent, -10.5px -10.5px 0 -15px transparent; }
+  87.5% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -25px 0 0 -15px currentColor, -10.5px -10.5px 0 -15px transparent; }
+  100% {
+    box-shadow: 0 -25px 0 -15px currentColor, 17.5px -17.5px 0 -15px currentColor, 25px 0 0 -15px currentColor, 17.5px 17.5px 0 -15px currentColor, 0 25px 0 -15px currentColor, -17.5px 17.5px 0 -15px currentColor, -25px 0 0 -15px currentColor, -17.5px -17.5px 0 -15px currentColor; } }
+.customize-partial-edit-shortcut,
+.widget .customize-partial-edit-shortcut {
+  display: none !important; }
+
+/*# sourceMappingURL=loftloader-preview.css.map */

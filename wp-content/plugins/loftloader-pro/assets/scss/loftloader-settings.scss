@@ -1,0 +1,1053 @@
+/**
+ * LoftLoader Pro Setting Panel Style
+*/
+
+// Define base colors
+$primary-color:     #41C7D3;
+$secondary-color:   #DDD;
+$text-color:        #111;
+$description-color: #888;
+
+@mixin animations($max-count) {
+    @for $i from 2 through $max-count {
+        &:nth-child(#{$i}) {
+            .loftloader-radiobtn + span:after {
+                background-position: (-45*($i - 2))*1px -47px;
+            }
+        }
+    }
+}
+
+@mixin rotatingdirection($max-count) {
+    @for $i from 1 through $max-count {
+        &:nth-child(#{$i}) {
+            .loftloader-radiobtn + span:after {
+                background-position: (-40*($i - 1))*1px -51px;
+            }
+        }
+    }
+}
+
+@mixin roundedcorner {
+    border-radius: 4px;
+}
+
+@mixin transform($transform) {
+    -webkit-transform: $transform;
+    -ms-transform: $transform;
+    transform: $transform;
+}
+
+@mixin optionsdisabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+@mixin slidervalue {
+    span.customize-control-title {
+        display: inline;
+
+        & + span {
+            float: right;
+            padding-right: 5px;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            font-weight: bold;
+            color: $text-color;
+            
+            .rtl & {
+                float: left;
+            }
+
+            input {
+                width: 40px;
+                padding-right: 0;
+                background: none;
+                border: none;
+                box-shadow: none;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+                font-weight: bold;
+                color: $text-color;
+                text-align: right;
+                
+                .rtl & {
+                    text-align: left;
+                }
+            }
+        }
+    }
+}
+
+#customize-theme-controls.loftloader-controls-wrapper {
+    font-family: Lato, -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+
+    .customize-section-title h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: $text-color;
+
+        span {
+            letter-spacing: 0;
+        }
+    }
+
+    .customize-control-title {
+        margin-top: 0;
+        font-size: 12px;
+        letter-spacing: 0.025em;
+        font-weight: bold;
+        text-transform: none;
+        color: $text-color;
+        line-height: 30px;
+
+        + span.description {
+            margin-top: 0;
+        }
+    }
+
+    span.description {
+        margin-top: 8px;
+        margin-bottom: 12px;
+        font-size: 11px;
+        font-style: normal;
+        color: $description-color;
+
+        strong {
+            color: $text-color;
+            font-weight: bold;
+        }
+    }
+
+    select,
+    input[type="text"],
+    input[type="number"],
+    button.button.remove-button {
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        font-weight: bold;
+        color: $text-color;
+        border-color: $primary-color;
+        box-shadow: none;
+    }
+
+    select[multiple] {
+        height: 120px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    button.button.remove-button {
+        background: #FFF;
+        width: 80px;
+        text-align: center;
+        @include roundedcorner;
+    }
+
+    button.button.remove-button:hover {
+        opacity: 0.75;
+    }
+
+    input[type="checkbox"] {
+        position: relative;
+        float: right;
+        width: 33px;
+        height: 33px;
+        border-radius: 50%;
+        background: none;
+        border: 2px solid $primary-color;
+        box-shadow: none;
+        font-size: 0;
+        
+        .rtl & {
+            float: left;
+        }
+
+        &:checked:before {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+            margin: 0 0 0 -1px;
+            width: 21px;
+            height: 21px;
+            color: $primary-color;
+            font: 21px dashicons;
+        }
+
+        &:hover {
+            opacity: 0.75;
+        }
+    }
+
+    .loftloader-radiobtn {
+        display: none;
+        width: inherit;
+        height: inherit;
+        opacity: 0;
+        margin: 0;
+
+        + span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: inherit;
+            height: inherit;
+            border: 2px solid $secondary-color;
+            box-sizing: border-box;
+        }
+
+        &.none + span {
+            &:before {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                @include transform(translate(-50%, -50%) rotate(45deg));
+                content: "";
+                width: 2px;
+                height: 58px;
+                background: $secondary-color;
+            }
+        }
+
+        &.none:checked + span:before {
+            background: $primary-color;
+        }
+
+        &:checked + span {
+            border-color: $primary-color;
+        }
+    }
+
+    .customize-control-btn {
+        label {
+            position: relative;
+            display: inline-block;
+            margin-left: 0;
+            padding: 0;
+        }
+
+        span.customize-control-title {
+            display: inline;
+
+            & + div {
+                float: right;
+                
+                .rtl & {
+                    float: left;
+                }
+            }
+        }
+
+        .loftloader-radiobtn {
+            position: absolute;
+
+            + span {
+                position: relative;
+                padding: 3px 10px;
+                @include roundedcorner;
+                border: 1px solid transparent;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+                color: $description-color;
+            }
+
+            &:checked + span {
+                border-color: $primary-color;
+                color: $text-color;
+            }
+        }
+    }
+
+    .accordion-section-content {
+        padding: 0;
+        background: #FFF;
+
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #FFF;
+            content: "";
+        }
+
+        li {
+            padding: 15px 12px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #EEE;
+            box-sizing: border-box;
+
+            &.customize-section-description-container {
+                padding: 12px 12px 0;
+                border-bottom: none;
+            }
+
+            &:last-of-type {
+                border-bottom: none;
+            }
+        }
+    }
+
+    .wp-picker-container {
+        overflow: visible;
+        width: auto;
+
+        .wp-color-result {
+            width: 24px;
+            height: 24px;
+            max-height: 24px;
+            min-height: 24px;
+            padding: 0;
+            margin-top: 2px;
+            border: 1px solid rgba(#000, 0.1);
+            border-radius: 50%;
+            box-shadow: none !important;
+            line-height: 28px;
+
+            &:after {
+                right: auto;
+                left: 24px;
+                width: 80px;
+                padding: 0 6px;
+                background: transparent;
+                border: none;
+                color: #555;
+                font-size: 11px;
+                text-align: left;
+                line-height: 24px;
+            }
+
+            .wp-color-result-text {
+                margin-left: 24px;
+                background: none;
+                border: none;
+                color: inherit;
+                line-height: 24px;
+
+                .rtl & {
+                    margin-right: 24px;
+                    margin-left: 0;
+                }
+            }
+        }
+
+        .wp-picker-open + .wp-picker-input-wrap {
+            float: right;
+            margin-top: -2px;
+            width: auto;
+            
+            .rtl & {
+                margin-left: 15px;
+            }
+        }
+
+        input[type="text"].wp-color-picker {
+            display: inline-block;
+            padding: 0 5px;
+            margin-top: 0;
+            width: 80px !important;
+            border: 1px solid $primary-color;
+            vertical-align: top;
+            font-family: Lato;
+            line-height: 26px;
+        }
+
+        .button.wp-picker-default {
+            display: none;
+        }
+    }
+
+    .attachment-media-view,
+    .media-widget-preview.media_audio,
+    .media-widget-preview.media_image {
+        background: none;
+    }
+
+    .loader-ui-slider {
+        height: 16px;
+        margin-top: 12px;
+        background: none;
+        border-radius: 0;
+        border: none;
+
+        &:before {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            @include transform(translateY(-50%));
+            width: 100%;
+            height: 2px;
+            background: $secondary-color;
+            content: "";
+        }
+
+        .ui-slider-range {
+            top: 50%;
+            @include transform(translateY(-50%));
+            height: 2px;
+            background: $primary-color;
+        }
+
+        .ui-slider-handle {
+            top: 50%;
+            @include transform(translateY(-50%));
+            width: 16px;
+            height: 16px;
+            background: $primary-color;
+            border: none;
+            border-radius: 50%;
+        }
+    }
+
+    &.loftloader-settings-disabled {
+        li#accordion-section-loftloader_pro_switch ~ li {
+            @include optionsdisabled;
+        }
+    }
+
+    ul.loftloader-control-disabled {
+        li#customize-control-loftloader_bgfilltype ~ li,
+        li#customize-control-loftloader_animation ~ li,
+        li#customize-control-loftloader_progress ~ li {
+            @include optionsdisabled;
+        }
+    }
+
+    li.customize-control.customize-control-image .thumbnail.thumbnail-image {
+        background-color: #EEE;
+    }
+
+    li#accordion-section-loftloader_pro_switch {
+        margin-bottom: 10px;
+
+        .accordion-section-title {
+            padding: 20px 10px 22px 14px;
+
+            &:after {
+                display: none;
+            }
+        }
+    }
+
+    li#customize-control-loftloader_bgfilltype {
+        span.customize-control-title {
+            display: inline;
+        }
+
+        #loftloader_option_bg {
+            float: right;
+            
+            .rtl & {
+                float: left;
+            }
+
+            label {
+                position: relative;
+                display: inline-block;
+                width: 24px;
+                height: 24px;
+                margin-left: 8px;
+                padding: 0;
+
+                .loftloader-radiobtn {
+                    &#loftloader_bgsolid + span {
+                        background: $secondary-color;
+                    }
+
+                    &#loftloader_bgnocolor + span:before {
+                        height: 24px;
+                    }
+
+                    &#loftloader_bgsolid:checked + span {
+                        background: $primary-color;
+                    }
+
+                    &#loftloader_bgimage + span {
+                        background: {
+                            color: $secondary-color;
+                            image: url(../img/bg-img.png);
+                            position: 50% 50%;
+                            size: 80%;
+                            repeat: no-repeat;
+                        }
+                    }
+
+                    &#loftloader_bgimage:checked + span {
+                        background-color: $primary-color;
+                    }
+                }
+
+                span {
+                    border-radius: 50%;
+                }
+            }
+        }
+    }
+
+    li.customize-control.customize-control-slider {
+        @include slidervalue;
+    }
+
+    li.customize-control.customize-control-check {
+        span.customize-control-title {
+            display: inline;
+        }
+    }
+
+    li#customize-control-loftloader_animation {
+        .customize-more-toggle {
+            position: relative;
+            float: right;
+            @include transform(rotate(135deg));
+            z-index: 9;
+            width: 20px;
+            height: 20px;
+            margin-top: -25px;
+            cursor: pointer;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            -webkit-appearance: none;
+            background: $primary-color;
+            border-radius: 50%;
+            border: none;
+            
+            .rtl & {
+                float: left;
+            }
+
+            &:before {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                @include transform(translate(-70%, -30%));
+                display: block;
+                width: 6px;
+                height: 6px;
+                border: 1px solid #FFF;
+                border-left: none;
+                border-bottom: none;
+                transform-origin: 50% 50%;
+                content: "";
+            }
+
+            &:focus {
+                outline: none;
+                opacity: 0.5;
+            }
+
+            &.expanded {
+                @include transform(rotate(-45deg));
+            }
+
+            & + span.description {
+                margin: 12px 0 0;
+            }
+        }
+
+        #loftloader_option_animation {
+            margin-top: 12px;
+
+            label {
+                position: relative;
+                float: left;
+                width: 45px;
+                height: 45px;
+                margin: 0 -2px -2px 0;
+                padding: 0;
+                @include animations(21);
+                
+                .rtl & {
+                    float: right;
+                }
+
+                &:first-child .loftloader-radiobtn + span:after {
+                    background: none;
+                }
+
+                .loftloader-radiobtn {
+                    & + span {
+                        overflow: hidden;
+
+                        &:after {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            display: block;
+                            width: inherit;
+                            height: inherit;
+                            background-image: url(../img/animation-options.png);
+                            background-size: 899px;
+                            opacity: 0.25;
+                            content: "";
+                        }
+                    }
+                }
+
+                .loftloader-radiobtn:checked + span {
+                    z-index: 8;
+
+                    &:after {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            &:after {
+                position: relative;
+                display: block;
+                clear: both;
+                content: "";
+            }
+        }
+    }
+
+    li#customize-control-loftloader_customimg {
+        button.upload-button {
+            position: relative;
+            float: right;
+            @include transform(rotate(-45deg));
+            width: 33px;
+            height: 33px;
+            border-radius: 50%;
+            background: none;
+            border: 2px solid $primary-color;
+            box-shadow: none;
+            font-size: 0;
+            
+            .rtl & {
+                float: left;
+            }
+
+            &:before,
+            &:after {
+                position: absolute;
+                content: "";
+                display: block;
+            }
+
+            &:before {
+                top: 50%;
+                left: 50%;
+                @include transform(translate(-22%, -76%));
+                width: 6px;
+                height: 6px;
+                border: 2px solid $primary-color;
+                border-left: none;
+                border-bottom: none;
+                transform-origin: 50% 50%;
+            }
+
+            &:after {
+                top: 50%;
+                left: 50%;
+                @include transform(translate(-50%, -50%) rotate(45deg));
+                width: 2px;
+                height: 16px;
+                background: $primary-color;
+            }
+
+            &:hover {
+                opacity: 0.75;
+            }
+        }
+
+        .current {
+            margin-top: 15px;
+        }
+    }
+
+    li.customize-control-number {
+        label {
+            position: relative;
+            display: block;
+
+            > span:last-child {
+                float: right;
+                z-index: 9;
+                font-size: 12px;
+                font-weight: bold;
+                letter-spacing: 0.05em;
+                color: $text-color;
+                
+                .rtl & {
+                    float: left;
+                }
+
+                input[type="number"] {
+                    margin-right: 5px;
+                    
+                    .rtl & {
+                        margin-right: 0;
+                        margin-left: 5px;
+                    }
+                }
+            }
+        }
+
+        span.customize-control-title {
+            display: inline;
+        }
+    }
+
+    li#customize-control-loftloader_rotatedirection {
+        #loftloader_option_rotatedirection {
+            label {
+                position: relative;
+                float: left;
+                width: 40px;
+                height: 35px;
+                padding: 0;
+
+                @include rotatingdirection(3);
+
+                .loftloader-radiobtn {
+                    & + span {
+                        overflow: hidden;
+
+                        &:after {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            display: block;
+                            width: inherit;
+                            height: inherit;
+                            background-image: url(../img/rotating-direction.png);
+                            background-size: 120px;
+                            opacity: 0.25;
+                            content: "";
+                        }
+                    }
+                }
+
+                .loftloader-radiobtn:checked + span {
+                    z-index: 99;
+                    &:after {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    li#customize-control-loftloader_progress {
+        #loftloader_option_progress {
+            label {
+                position: relative;
+                float: left;
+                width: 45px;
+                height: 45px;
+                margin: 0 -2px -2px 0;
+                padding: 0;
+                
+                .rtl & {
+                    float: right;
+                }
+
+                .loftloader-radiobtn {
+                    &#loftloader_progressbar + span {
+                        &:before,
+                        &:after {
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            @include transform(translate(-50%, -50%));
+                            width: 26px;
+                            height: 4px;
+                            background: #999;
+                            content: "";
+                            opacity: 0.25;
+                        }
+
+                        &:after {
+                            left: calc(50% - 4px);
+                            width: 18px;
+                            background: #0F2022;
+                        }
+                    }
+
+                    &#loftloader_progresspercentage + span {
+                        text-align: center;
+                        line-height: 40px;
+
+                        &:before {
+                            font-size: 12px;
+                            letter-spacing: 0.05em;
+                            font-weight: bold;
+                            color: $text-color;
+                            content: "%";
+                            opacity: 0.25;
+                        }
+                    }
+
+                    &#loftloader_progress_bar_number + span {
+                        &:before {
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            @include transform(translate(-50%, -50%));
+                            width: 26px;
+                            height: 2px;
+                            background: #999;
+                            content: "";
+                            opacity: 0.25;
+                        }
+
+                        &:after {
+                            position: absolute;
+                            top: 50%;
+                            left: calc(50% - 13px);
+                            font-size: 8px;
+                            font-weight: bold;
+                            line-height: 12px;
+                            color: $text-color;
+                            content: "%";
+                            opacity: 0.25;
+                        }
+                    }
+
+                    &:checked + span {
+                        &:before,
+                        &:after {
+                            opacity: 1 !important;
+                        }
+                    }
+                }
+
+                .loftloader-radiobtn:checked + span {
+                    z-index: 8;
+
+                    &:after {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            &:after {
+                position: relative;
+                display: block;
+                clear: both;
+                content: "";
+            }
+        }
+    }
+
+    li#customize-control-loftloader_barwidth {
+        .barwidth {
+            .barwidth-unit {
+                float: right;
+                position: relative;
+                width: 30px;
+                
+                .rtl & {
+                    float: left;
+                }
+
+                input[type="checkbox"] {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 30px;
+                    height: 30px;
+                    opacity: 0;
+                    font-size: 0;
+
+                    & + span {
+                        display: inline-block;
+                        width: 20px;
+                        height: 20px;
+                        padding: 4px;
+                        border: 1px solid $primary-color;
+                        text-align: center;
+                        @include roundedcorner;
+
+                        &:before {
+                            font-size: 12px;
+                            letter-spacing: 0.05em;
+                            font-weight: bold;
+                            color: $text-color;
+                            content: "%";
+                            line-height: 20px;
+                        }
+                    }
+
+                    &:checked + span:before {
+                        content: "px";
+                        line-height: 18px;
+                    }
+                }
+            }
+        }
+    }
+
+    li#customize-control-loftloader_pro_message_text,
+    li#customize-control-loftloader_pro_show_close_tip {
+        input[type="text"] {
+            width: 100%;
+            text-align: left;
+            
+            .rtl & {
+                text-align: right;
+            }
+        }
+    }
+
+    li#customize-control-loftloader_pro_message_position {
+        span.customize-control-title {
+            display: block;
+
+            & + div {
+                float: none;
+            }
+        }
+    }
+
+    li#customize-control-loftloader_responsive_design_max_width {
+        span.customize-control-title {
+            display: inline-block;
+            width: calc(100% - 110px);
+            line-height: 1.35;
+        }
+    }
+
+    li#customize-control-loftloader_pro_hand_pick_pages,
+    li#customize-control-loftloader_pro_site_wide_exclude_pages,
+    li#customize-control-loftloader_pro_all_pages_exclude_pages {
+        .selected-list {
+            margin: 0 -3px 15px;
+
+            li {
+                position: relative;
+                display: inline-block;
+                padding: 5px 38px 5px 10px;
+                margin: 3px;
+                background: #333;
+                border-radius: 5px;
+                border: none;
+                color: #fff;
+                overflow: hidden;
+
+                .remove-item {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 28px;
+                    height: 100%;
+                    border-left: 1px solid #fff;
+                    color: #fff;
+                    text-decoration: none;
+                    text-align: center;
+                    line-height: 26px;
+                }
+            }
+        }
+
+        .search-results {
+            margin: 15px -3px;
+
+            li {
+                position: relative;
+                display: inline-block;
+                padding: 5px 10px;
+                margin: 3px;
+                background: #f3f3f3;
+                border-radius: 5px;
+                border: none;
+                color: #222;
+                overflow: hidden;
+                cursor: pointer;
+
+                &:hover {
+                    background: #e6e6e6;
+                }
+            }
+        }
+
+        .search-posts {
+            line-height: 28px;
+        }
+
+        a.button.clear-search-results {
+            margin-top: 5px;
+            width: 100%;
+            text-align: center;
+        }
+    }
+    
+    li#customize-control-loftloader_pro_render_random_message_by_js,
+    li#customize-control-loftloader_pro_insite_transition_show_all,
+    li#customize-control-loftloader_pro_inject_html_in_action_init,
+    li#customize-control-loftloader_pro_insite_transition_reverse_bg_animation,
+    li#customize-control-loftloader_pro_adaptive_loading_screen_height_on_mobile,
+    li#customize-control-loftloader_pro_insite_transition_show_close_button {
+        span.customize-control-title {
+            display: inline-block;
+            width: calc(100% - 60px);
+            line-height: 1.35;
+        }
+    }
+    
+    li#customize-control-loftloader_pro_render_random_message_by_js,
+    li#customize-control-loftloader_pro_insite_transition_show_all {
+        margin-top: 3px;
+    }
+    
+    li#customize-control-loftloader_pro_exclude_from_page_transition span.customize-control-title,
+    li#customize-control-loftloader_pro_disable_loader_by_url_parameter span.customize-control-title {
+        line-height: 1.35;
+    }
+    
+    li#customize-control-loftloader_pro_custom_css {
+        padding: 0;
+        
+        > label {
+            padding: 15px 12px;
+            margin-bottom: 0;
+            width: 100%;
+            border-bottom: 1px solid #e6e6e6;
+        }
+        
+        .CodeMirror {
+            height: calc(100vh - 310px);
+        }
+    }
+
+    li#customize-control-loftloader_percentage_margin {
+        .loftloader_option_percentage_margin {
+            float: none;
+        }
+
+        .loftloader-margin {
+            display: flex;
+
+            li {
+                padding: 0;
+                border: none;
+                flex: 1;
+                text-align: center;
+            }
+
+            input[type="number"] {
+                width: calc(100% - 2px);
+            }
+
+            .loftloader-label {
+                font-size: 10px;
+            }
+        }
+    }
+}
+
+
+// Hide extra elements created by Divi Theme
+.wp-full-overlay {
+    & > .customize-controls-close,
+    & > .et-core-modal-overlay {
+        display: none;
+        visibility: hidden;
+    }
+}

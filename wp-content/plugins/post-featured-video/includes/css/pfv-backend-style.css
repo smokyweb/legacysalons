@@ -1,0 +1,136 @@
+.pfv_bttn_sect {
+    margin-top: 10px;
+}
+.pfv_bttn_sect input[type="text"] {
+    width: 100%;
+    margin: 10px auto;
+}
+
+
+/* The switch - the box around the slider */
+.pfv_onoff_switcher {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.pfv_onoff_switcher input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.pfv_onoff_slder {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.pfv_onoff_slder:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .pfv_onoff_slder {
+  background-color: #2196F3;
+}
+
+input:focus + .pfv_onoff_slder {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .pfv_onoff_slder:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.pfv_onoff_slder.round {
+  border-radius: 34px;
+}
+
+.pfv_onoff_slder.round:before {
+  border-radius: 50%;
+}
+
+
+#meta-box-id-featured-vid {
+  display: none;
+}
+
+body.block-editor-page #meta-box-id-featured-vid {
+  display: block;
+}
+
+textarea#pfvvideourl {
+    width: 100%;
+}
+.pfv-pty-cls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pfv-posty-labl {
+  margin-right: 15px;
+  width: 200px;
+}
+
+
+div.notice.pfvideo--notice{
+  background-image: url('../img/bg_image.png');
+  border: 1px solid #c3c4c7;
+  padding: 12px 22px;
+}
+div.notice.pfvideo--notice h3, div.notice.pfvideo--notice p{
+  color: #ffffff;
+}
+
+div.notice.pfvideo--notice p.e-note{
+    margin-top: 11px;
+}
+
+div.notice.pfvideo--notice .e-notice__actions a{
+  margin-right: 6px;
+}
+
+div.notice.pfvideo--notice .e-button--cta.cta-secondary{
+  color: #FFFFFF;
+  background-color: #54375E;
+  border-color: #54375E;
+}
+
+div.notice.pfvideo--notice .e-button--cta{
+  box-shadow: none;
+  color: #fff;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 2.15384615;
+  min-height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  -webkit-appearance: none;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}

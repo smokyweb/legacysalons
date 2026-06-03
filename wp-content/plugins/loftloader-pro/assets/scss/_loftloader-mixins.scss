@@ -1,0 +1,200 @@
+// LoftLoader Pro - Mixins
+
+@mixin transform($transform) {
+    -webkit-transform: $transform;
+    -ms-transform: $transform;
+    transform: $transform;
+}
+
+@mixin endLoader {
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+@mixin endLoaderUp {
+    .loader-inner {
+        @include transform(translate(-50%, -120vh));
+        transition: transform 0.7s ease-out;
+        
+        #loader,
+        span.bar,
+        span.percentage,
+        .loader-message {
+            opacity: 1;
+        }
+    }
+}
+
+@mixin animation($animation) {
+    -webkit-animation: $animation;
+    animation: $animation;
+}
+
+@mixin endTransition {
+    transition: all 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+}
+
+@mixin endBgSplitH {
+    &:before,
+    &:after {
+        @include endTransition;
+    }
+    &:before {
+        @include transform(translateX(-100%));
+    }
+    &:after {
+        @include transform(translateX(100%));
+    }
+}
+
+@mixin endBgSplitV {
+    &:before,
+    &:after {
+        @include endTransition;
+    }
+    &:before {
+        @include transform(translateY(-100%));
+    }
+    &:after {
+        @include transform(translateY(100%));
+    }
+}
+
+@mixin endBgFade {
+    opacity: 0 !important;
+    @include endTransition;
+}
+
+@mixin endBgUp {
+    @include transform(translateY(-100%));
+    @include endTransition;
+}
+
+@mixin endBgDown {
+    @include transform(translateY(100%));
+    @include endTransition;
+}
+
+@mixin endBgLeft {
+    @include transform(translateX(-100%));
+    @include endTransition;
+}
+
+@mixin endBgRight {
+    @include transform(translateX(100%));
+    @include endTransition;
+}
+
+@mixin endBgSplitRevealV {
+    &:before,
+    &:after {
+        @include endTransition;
+        height: 0;
+    }
+    &:before {
+        @include transform(translateY(-100px));
+    }
+    &:after {
+        @include transform(translateY(100px));
+    }
+}
+
+@mixin endBgSplitRevealH {
+    &:before,
+    &:after {
+        @include endTransition;
+        width: 0;
+    }
+    &:before {
+        @include transform(translateX(-100px));
+    }
+    &:after {
+        @include transform(translateX(100px));
+    }
+}
+
+@mixin leaveTransition {
+    transition: all 0.4s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+}
+
+@mixin bgSplitH {
+    &:before,
+    &:after {
+        @include leaveTransition;
+    }
+    &:before {
+        @include transform(translateX(0));
+    }
+    &:after {
+        @include transform(translateX(0));
+    }
+}
+
+@mixin bgSplitV {
+    &:before,
+    &:after {
+        @include leaveTransition;
+    }
+    &:before {
+        @include transform(translateY(0));
+    }
+    &:after {
+        @include transform(translateY(0));
+    }
+}
+
+@mixin bgFade {
+    @include leaveTransition;
+}
+
+@mixin bgUp {
+    @include transform(translateY(0));
+    @include leaveTransition;
+}
+
+@mixin bgDown {
+    @include transform(translateY(0));
+    @include leaveTransition;
+}
+
+@mixin bgLeft {
+    @include transform(translateX(0));
+    @include leaveTransition;
+}
+
+@mixin bgRight {
+    @include transform(translateX(0));
+    @include leaveTransition;
+}
+
+@mixin bgSplitRevealV {
+    &:before,
+    &:after {
+        @include leaveTransition;
+        @include transform(none);
+        height: 100%;
+    }
+}
+
+@mixin bgSplitRevealH {
+    &:before,
+    &:after {
+        @include leaveTransition;
+        @include transform(none);
+        width: 100%;
+    }
+}
+
+@mixin customImg {
+    width: auto;
+    height: auto;
+    
+    img {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 auto;
+    }
+}

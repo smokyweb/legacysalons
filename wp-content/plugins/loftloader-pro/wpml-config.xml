@@ -1,0 +1,7 @@
+<wpml-config>
+	<admin-texts>
+		<key name="loftloader_pro_random_message_text" />
+		<key name="loftloader_pro_message_text" />
+		<key name="loftloader_pro_show_close_tip" />
+	</admin-texts>
+</wpml-config>

@@ -1,0 +1,2075 @@
+/**
+ * LoftLoader Pro Frontend Style
+ *
+ * Plugin Name: LoftLoader Pro
+ * Plugin URI: https://www.loftocean.com/loftloader
+ * Author: Loft.Ocean
+ * Author URI: https://www.loftocean.com
+ * Description: LoftLoader Pro is a plugin for adding beautiful and smooth preload animation to your WordPress website. With plenty of setting options, you can choose from preset animations, add custom logo image, choose colours to match your branding, and amuse and impress your visitors while loading site content.
+ * Version: 2.5
+*/
+
+/**
+ * Table of Contents:
+ *
+ * 1.0 - Animations & SASS Mixins
+ * 2.0 - General Styles
+ * 3.0 - Loader
+ *       3.1 - Spinning Sun
+ *       3.2 - Luminous Circles
+ *       3.3 - Wave
+ *       3.4 - Spinning Square
+ *       3.5 - Drawing Frame
+ *       3.6 - Loading Custom Image
+ *       3.7 - Rotating Custom Image
+ *       3.8 - Bouncing Custom Image
+ *       3.9 - Crossing Circles
+ *       3.10 - Ducks
+ *       3.11 - Rainbow
+ *       3.12 - Circle Filling
+ *       3.13 - Water Filling
+ *       3.14 - Crystal
+ *       3.15 - Petals
+ *       3.16 - Beating
+ *       3.17 - Fading Custom Image
+ *       3.18 - Incomplete Ring
+ *       3.19 - Disable Animations When Loop Once
+ * 4.0 - Progress
+ *       4.1 - Percentage
+ *       4.2 - Progress Bar
+ * 5.0 - Message
+ * 6.0 - Close Button
+ */
+
+
+/* ==========================================================================
+   1.0 Animations & SASS Mixins
+   ========================================================================== */
+
+$primary-color: #248ACC;
+@import 'loftloader-animation';
+@import 'loftloader-mixins';
+
+
+/* ==========================================================================
+   2.0 General Styles for LoftLoader Wrapper
+   ========================================================================== */
+
+html,
+body {
+    opacity: 1 !important; //Prevent site content from being hidden by other plugins before their code get fully loaded.
+}
+
+#loftloader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    @include transform(translateX(0));
+    z-index: 9999999;
+    width: 100%;
+    height: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
+    background: transparent !important; // Prevent other plugins from adding unwanted backgrounds to this element.
+    
+    &.adaptive-height {
+        min-height: 100%; // For mobile browsers: screen height may change due to the address bar / toolbar
+    }
+
+    img {
+        max-width: 100%;
+    }
+
+    &.bgnone {
+        pointer-events: none;
+    }
+
+    // After the page content has been loaded:
+    .loaded.loftloader-loaded & {
+        pointer-events: none;
+
+        // Hide the preloader elements
+        #loader,
+        span.bar,
+        span.percentage,
+        .loader-message,
+        .loader-close-button {
+            @include endLoader;
+        }
+
+        &.inner-end-up {
+            @include endLoaderUp;
+        }
+    }
+    
+    .loaded.loftloader-loaded:not(.leaves) & {
+        &.inner-end-up .loader-inner {
+            @include transform(translate(-50%, calc(0px - (50vh + 100%))));
+            @include animation(innerEndUpFade .7s .6s cubic-bezier(.645, .045, .355, 1));
+            animation-fill-mode: forwards;
+        }
+    }
+
+    .loaded.loftloader-loaded.leaves.spt-show-all & {
+        #loader,
+        span.bar,
+        span.percentage,
+        .loader-message {
+            opacity: 1;
+        }
+
+        #loader,
+        .loader-message {
+            transition-delay: 0.3s;
+        }
+
+        &.inner-end-up .loader-inner {
+            @include transform(translate(-50%, -50%));
+            transition: 0s 0s;
+        }
+    }
+
+    .loader-inner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        @include transform(translate(-50%, -50%));
+        z-index: 1001;
+        width: 100%;
+        text-align: center;
+        transition: all 0s;
+        font-size: 0;
+
+        #loader {
+            position: relative;
+            z-index: 1002;
+            top: auto;
+            left: auto;
+            display: inline-block;
+            margin: 0 auto;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            background: none !important; // Prevent other plugins from adding unwanted backgrounds to this element.
+            color: $primary-color;
+        }
+
+        .with-percentage {
+            position: relative;
+        }
+    }
+
+    &.inner-enter-fade .loader-inner {
+        @include animation(fadeIn 0.7s ease-in 1);
+    }
+
+    &.inner-enter-up .loader-inner {
+        @include animation(slideIn 0.7s ease-in 1);
+    }
+
+    // LoftLoader Background
+    .loader-bg {
+        position: fixed;
+        top: 0;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        opacity: 0.9;
+    }
+
+    // Split Horizontally
+    &.end-split-h .loader-bg {
+        &:before,
+        &:after {
+            position: absolute;
+            top: 0;
+            display: block;
+            width: 50%;
+            height: 100%;
+            background-color: #FFF;
+            background-size: 200% 100%;
+            content: "";
+            transition: all 0s;
+            will-change: transform;
+        }
+
+        &:before {
+            left: 0;
+            background-position: 0 0;
+            width: calc(50% + 1px);
+        }
+
+        &:after {
+            right: 0;
+            background-position: 100% 0;
+        }
+
+        .loaded.loftloader-loaded & {
+            @include endBgSplitH;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgSplitH;
+        }
+    }
+
+    // Split Vertically
+    &.end-split-v .loader-bg {
+        &:before,
+        &:after {
+            position: absolute;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 50%;
+            background-color: #FFF;
+            background-size: 100% 200%;
+            content: "";
+            transition: all 0s;
+            will-change: transform;
+        }
+
+        &:before {
+            top: 0;
+            background-position: 0 0;
+        }
+
+        &:after {
+            bottom: 0;
+            background-position: 0 100%;
+        }
+
+        .loaded.loftloader-loaded & {
+            @include endBgSplitV;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgSplitV;
+        }
+    }
+
+    // Fade
+    &.end-fade .loader-bg {
+        background-color: #FFF;
+        will-change: opacity;
+
+        .loaded.loftloader-loaded:not(.leaves) & {
+            @include endBgFade;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgFade;
+        }
+    }
+    
+    // No Animation
+    &.end-no-animation {
+        background-color: #FFF;
+        
+        .loaded.loftloader-loaded:not(.leaves) & {
+            opacity: 0;
+            transition: all 0s 0s;
+        }
+        
+        .loaded.loftloader-loaded.leaves & {
+            opacity: 1;
+            transition: all 0s 0s;
+        }
+    }
+
+    // Slide Up
+    &.end-up .loader-bg {
+        background-color: #FFF;
+        will-change: transform;
+
+        .loaded.loftloader-loaded & {
+            @include endBgUp;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgUp;
+        }
+        
+        .loaded.loftloader-loaded.leaves &.spt-bg-reverse {
+            @include animation(leaveFromBottom 0.4s cubic-bezier(0.645, 0.045, 0.355, 1.000) 1 forwards);
+            transform: translateY(100%);
+            transition: 0s 0s;
+        }
+    }
+    
+    // Slide Down
+    &.end-down .loader-bg {
+        background-color: #FFF;
+        will-change: transform;
+
+        .loaded.loftloader-loaded & {
+            @include endBgDown;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgDown;
+        }
+        
+        .loaded.loftloader-loaded.leaves &.spt-bg-reverse {
+            @include animation(leaveFromTop 0.4s cubic-bezier(0.645, 0.045, 0.355, 1.000) 1 forwards);
+            transform: translateY(-100%);
+            transition: 0s 0s;
+        }
+    }
+
+    // Slide Left
+    &.end-left .loader-bg {
+        background-color: #FFF;
+        will-change: transform;
+
+        .loaded.loftloader-loaded & {
+            @include endBgLeft;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgLeft;
+        }
+        
+        .loaded.loftloader-loaded.leaves &.spt-bg-reverse {
+            @include animation(leaveFromRight 0.4s cubic-bezier(0.645, 0.045, 0.355, 1.000) 1 forwards);
+            transform: translateX(100%);
+            transition: 0s 0s;
+        }
+    }
+
+    // Slide Right
+    &.end-right .loader-bg {
+        background-color: #FFF;
+        will-change: transform;
+
+        .loaded.loftloader-loaded & {
+            @include endBgRight;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgRight;
+        }
+        
+        .loaded.loftloader-loaded.leaves &.spt-bg-reverse {
+            @include animation(leaveFromLeft 0.4s cubic-bezier(0.645, 0.045, 0.355, 1.000) 1 forwards);
+            transform: translateX(-100%);
+            transition: 0s 0s;
+        }
+    }
+
+    // Shrink & Fade
+    &.end-shrink-fade {
+        .loader-bg {
+            perspective: 1000px;
+
+            &:before {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                width: 100%;
+                height: 100%;
+                content: "";
+                will-change: transform, opacity;
+                transform-style: preserve-3d;
+            }
+
+            .loaded.loftloader-loaded &:before {
+                @include animation(endBgShrinkFade 0.7s linear 0.3s 1);
+                animation-fill-mode: forwards;
+            }
+
+            .loaded.loftloader-loaded.leaves &:before {
+                @include animation(bgShrinkFade 0.5s linear 0s 1);
+            }
+        }
+    }
+
+    // Split & Reveal Vertically
+    &.end-split-h.split-reveal-v .loader-bg {
+        &:before,
+        &:after {
+            will-change: transform, height;
+        }
+
+        &.bg-img {
+            &:before,
+            &:after {
+                background-attachment: fixed !important;
+                background-position: 50% 50% !important;
+            }
+        }
+
+        &:after {
+            top: auto;
+            bottom: 0;
+        }
+
+        .loaded.loftloader-loaded & {
+            @include endBgSplitRevealV;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgSplitRevealV;
+        }
+    }
+
+    // Split & Reveal Horizontally
+    &.end-split-v.split-reveal-h .loader-bg {
+        &:before,
+        &:after {
+            will-change: transform, width;
+        }
+
+        &.bg-img {
+            &:before,
+            &:after {
+                background-attachment: fixed !important;
+                background-position: 50% 50% !important;
+            }
+        }
+
+        &:after {
+            right: 0;
+            left: auto;
+        }
+
+        .loaded.loftloader-loaded & {
+            @include endBgSplitRevealH;
+        }
+
+        .loaded.loftloader-loaded.leaves & {
+            @include bgSplitRevealH;
+        }
+    }
+
+    // Split Diagonally
+    &.split-diagonally {
+        .loader-bg {
+            &:before,
+            &:after {
+                opacity: 0;
+
+                .loaded.loftloader-loaded & {
+                    opacity: 1;
+                    transition: transform 0.7s 0.3s cubic-bezier(0.645, 0.045, 0.355, 1.000), opacity 0s 0s;
+                }
+            }
+
+            &.bg-img.pattern {
+                background-position: 50% 50%;
+            }
+        }
+
+        &.end-split-h {
+            .loader-bg {
+                &:before,
+                &:after {
+                    width: 100%;
+                    background-size: 100% 100%;
+                }
+
+                &:before {
+                    -webkit-clip-path: polygon(0% 0%, 55% 0%, 45% 100%, 0% 100%);
+                    clip-path: polygon(0% 0%, 55% 0%, 45% 100%, 0% 100%);
+                }
+
+                &:after {
+                    -webkit-clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 45% 100%);
+                    clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 45% 100%);
+                }
+            }
+        }
+
+        &.end-split-v {
+            .loader-bg {
+                &:before,
+                &:after {
+                    height: 100%;
+                    background-size: 100% 100%;
+                }
+
+                &:before {
+                    -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 0% 40%);
+                    clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 0% 40%);
+                }
+
+                &:after {
+                    -webkit-clip-path: polygon(0% 40%, 100% 60%, 100% 100%, 0% 100%);
+                    clip-path: polygon(0% 40%, 100% 60%, 100% 100%, 0% 100%);
+                }
+            }
+        }
+    }
+
+    // When enabling "Smooth Page Transition":
+    .loaded.loftloader-loaded.leaves & {
+        @include transform(translateX(0));
+        visibility: visible;
+        pointer-events: auto;
+        opacity: 1;
+        transition-delay: 0s;
+    }
+
+    // When using background image
+    &.end-split-h .loader-bg.bg-img.full:before,
+    &.end-split-h .loader-bg.bg-img.full:after,
+    &.end-split-v .loader-bg.bg-img.full:before,
+    &.end-split-v .loader-bg.bg-img.full:after,
+    &.end-fade .loader-bg.bg-img.full,
+    &.end-no-animation .loader-bg.bg-img.full,
+    &.end-up .loader-bg.bg-img.full,
+    &.end-down .loader-bg.bg-img.full,
+    &.end-left .loader-bg.bg-img.full,
+    &.end-right .loader-bg.bg-img.full,
+    &.end-shrink-fade .loader-bg.bg-img.full:before,
+    &.split-diagonally .loader-bg.bg-img.full {
+        background: {
+            size: cover;
+            position: 50% 50%;
+            repeat: no-repeat;
+        }
+    }
+
+    &.end-split-h .loader-bg.bg-img.full.bg-contain:before,
+    &.end-split-h .loader-bg.bg-img.full.bg-contain:after,
+    &.end-split-v .loader-bg.bg-img.full.bg-contain:before,
+    &.end-split-v .loader-bg.bg-img.full.bg-contain:after,
+    &.end-fade .loader-bg.bg-img.full.bg-contain,
+    &.end-no-animation .loader-bg.bg-img.full.bg-contain,
+    &.end-up .loader-bg.bg-img.full.bg-contain,
+    &.end-down .loader-bg.bg-img.full.bg-contain,
+    &.end-left .loader-bg.bg-img.full.bg-contain,
+    &.end-right .loader-bg.bg-img.full.bg-contain,
+    &.end-shrink-fade .loader-bg.bg-img.full.bg-contain:before,
+    &.split-diagonally .loader-bg.bg-img.full.bg-contain {
+        background-size: contain;
+    }
+
+    &.end-split-h .loader-bg.bg-img.pattern:before,
+    &.end-split-h .loader-bg.bg-img.pattern:after,
+    &.end-split-v .loader-bg.bg-img.pattern:before,
+    &.end-split-v .loader-bg.bg-img.pattern:after,
+    &.end-fade .loader-bg.bg-img.pattern,
+    &.end-no-animation .loader-bg.bg-img.pattern,
+    &.end-up .loader-bg.bg-img.pattern,
+    &.end-down .loader-bg.bg-img.pattern,
+    &.end-left .loader-bg.bg-img.pattern,
+    &.end-right .loader-bg.bg-img.pattern,
+    &.end-shrink-fade .loader-bg.bg-img.pattern:before,
+    &.split-diagonally .loader-bg.bg-img.pattern {
+        background: {
+            size: auto;
+            repeat: repeat;
+        }
+    }
+
+    &.end-fade .loader-bg.bg-img.pattern,
+    &.end-no-animation .loader-bg.bg-img.pattern,
+    &.end-up .loader-bg.bg-img.pattern,
+    &.end-down .loader-bg.bg-img.pattern,
+    &.end-left .loader-bg.bg-img.pattern,
+    &.end-right .loader-bg.bg-img.pattern,
+    &.end-shrink-fade .loader-bg.bg-img.pattern:before {
+        background-position: 50% 50%;
+    }
+
+    &.split-diagonally {
+        &.end-split-h,
+        &.end-split-v {
+            .loader-bg.bg-img.pattern {
+                &:before,
+                &:after {
+                    background-position: 50% 50%;
+                }
+            }
+        }
+    }
+
+    &.end-split-h .loader-bg {
+        &.bg-img.full {
+            &:before,
+            &:after {
+                background-attachment: fixed;
+            }
+        }
+
+        &.bg-img.pattern {
+            &:before {
+                background-position: 100% 50%;
+            }
+
+            &:after {
+                background-position: 0 50%;
+            }
+        }
+    }
+    
+    &.end-split-h:not(.split-diagonally) .loader-bg.bg-img .loader-bg-half {
+        width: calc(50% + 0.5px) !important;
+    }
+
+    &.end-split-v .loader-bg {
+        &.bg-img.full {
+            &:before,
+            &:after {
+                background-attachment: fixed;
+            }
+        }
+
+        &.bg-img.pattern {
+            &:before {
+                background-position: 50% 100%;
+            }
+
+            &:after {
+                background-position: 50% 0;
+            }
+        }
+    }
+
+    // When using full background image for "Slide Left & Right" or "Slide Up & Down" end effects
+    &.bg-split {
+        &.end-split-h .loader-bg.bg-img.full,
+        &.end-split-v .loader-bg.bg-img.full {
+            &:before,
+            &:after {
+                display: none;
+            }
+
+            .loader-bg-half {
+                position: absolute;
+                display: block;
+                transition: all 0s;
+                will-change: transform;
+                overflow: hidden;
+
+                &:before {
+                    position: absolute;
+                    display: block;
+                    background: {
+                        size: cover;
+                        position: 50% 50%;
+                        repeat: no-repeat;
+                    }
+                    content: "";
+                }
+            }
+
+            &.bg-contain {
+                .loader-bg-half:before {
+                    background-size: contain;
+                }
+            }
+        }
+
+        &.end-split-h .loader-bg.bg-img.full {
+            .loader-bg-half {
+                top: 0;
+                width: 50%;
+                height: 100%;
+
+                &:before {
+                    top: 0;
+                    width: 200%;
+                    height: 100%;
+                }
+
+                &:first-child,
+                &:first-child:before {
+                    left: 0;
+                }
+
+                &:last-child,
+                &:last-child:before {
+                    right: 0;
+                }
+            }
+
+            .loaded.loftloader-loaded & {
+                .loader-bg-half {
+                    @include endTransition;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateX(-100%));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateX(100%));
+                }
+            }
+
+            .loaded.leaves & {
+                .loader-bg-half {
+                    @include leaveTransition;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateX(0));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateX(0));
+                }
+            }
+        }
+
+        &.end-split-v .loader-bg.bg-img.full {
+            .loader-bg-half {
+                left: 0;
+                width: 100%;
+                height: 50%;
+
+                &:before {
+                    left: 0;
+                    width: 100%;
+                    height: 200%;
+                }
+
+                &:first-child,
+                &:first-child:before {
+                    top: 0;
+                }
+
+                &:last-child,
+                &:last-child:before {
+                    bottom: 0;
+                }
+            }
+
+            .loaded.loftloader-loaded & {
+                .loader-bg-half {
+                    @include endTransition;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateY(-100%));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateY(100%));
+                }
+            }
+
+            .loaded.leaves & {
+                .loader-bg-half {
+                    @include leaveTransition;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateY(0));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateY(0));
+                }
+            }
+        }
+    }
+
+    // When using background image/pattern for "Split & Reveal" end effects
+    &.bg-split {
+        &.end-split-h.split-reveal-v .loader-bg.bg-img,
+        &.end-split-v.split-reveal-h .loader-bg.bg-img {
+            &:before,
+            &:after {
+                display: none;
+            }
+
+            .loader-bg-half {
+                position: absolute;
+                display: block;
+                transition: all 0s;
+                overflow: hidden;
+
+                &:before {
+                    position: absolute;
+                    display: block;
+                    content: "";
+                }
+            }
+
+            &.full .loader-bg-half:before {
+                background: {
+                    size: cover;
+                    position: 50% 50%;
+                    repeat: no-repeat;
+                }
+            }
+
+            &.full.bg-contain .loader-bg-half:before {
+                background-size: contain;
+            }
+
+            &.pattern .loader-bg-half:before {
+                background: {
+                    size: auto;
+                    position: 50% 50%;
+                    repeat: repeat;
+                }
+            }
+        }
+
+        &.end-split-h.split-reveal-v .loader-bg.bg-img {
+            .loader-bg-half {
+                top: 0;
+                width: 50%;
+                height: 100%;
+                will-change: transform, height;
+
+                &:before {
+                    top: 0;
+                    width: 100vw;
+                    height: 100vh;
+                }
+
+                &:first-child,
+                &:first-child:before {
+                    left: 0;
+                }
+
+                &:last-child,
+                &:last-child:before {
+                    top: auto;
+                    right: 0;
+                    bottom: 0;
+                }
+            }
+
+            .loaded.loftloader-loaded & {
+                .loader-bg-half {
+                    @include endTransition;
+                    height: 0;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateY(-100px));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateY(100px));
+                }
+            }
+
+            .loaded.leaves & {
+                .loader-bg-half {
+                    @include leaveTransition;
+                    transform: none !important;
+                    height: 100%;
+                }
+            }
+        }
+
+        &.end-split-v.split-reveal-h .loader-bg.bg-img {
+            .loader-bg-half {
+                left: 0;
+                width: 100%;
+                height: 50%;
+                will-change: transform, width;
+
+                &:before {
+                    left: 0;
+                    width: 100vw;
+                    height: 200%;
+                }
+
+                &:first-child,
+                &:first-child:before {
+                    top: 0;
+                }
+
+                &:last-child,
+                &:last-child:before {
+                    right: 0;
+                    bottom: 0;
+                    left: auto;
+                }
+            }
+
+            .loaded.loftloader-loaded & {
+                .loader-bg-half {
+                    @include endTransition;
+                    width: 0;
+                }
+
+                .loader-bg-half:first-child {
+                    @include transform(translateX(-100px));
+                }
+
+                .loader-bg-half:last-child {
+                    @include transform(translateX(100px));
+                }
+            }
+
+            .loaded.leaves & {
+                .loader-bg-half {
+                    @include leaveTransition;
+                    transform: none !important;
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    // When using background image for "Split Diagonally" end effects
+    &.bg-split {
+        &.end-split-h.split-diagonally {
+            .loader-bg.bg-img.full {
+                .loader-bg-half {
+                    width: 100%;
+
+                    &:before {
+                        width: 100%;
+                    }
+                }
+
+                .loader-bg-half:first-child {
+                    -webkit-clip-path: polygon(0% 0%, 55% 0%, 45% 100%, 0% 100%);
+                    clip-path: polygon(0% 0%, 55% 0%, 45% 100%, 0% 100%);
+                }
+
+                .loader-bg-half:last-child {
+                    -webkit-clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 45% 100%);
+                    clip-path: polygon(55% 0%, 100% 0%, 100% 100%, 45% 100%);
+                }
+            }
+        }
+
+        &.end-split-v.split-diagonally {
+            .loader-bg.bg-img.full {
+                .loader-bg-half {
+                    height: 100%;
+
+                    &:before {
+                        height: 100%;
+                    }
+                }
+
+                .loader-bg-half:first-child {
+                    -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 0% 40%);
+                    clip-path: polygon(0% 0%, 100% 0%, 100% 60%, 0% 40%);
+                }
+
+                .loader-bg-half:last-child {
+                    -webkit-clip-path: polygon(0% 40%, 100% 60%, 100% 100%, 0% 100%);
+                    clip-path: polygon(0% 40%, 100% 60%, 100% 100%, 0% 100%);
+                }
+            }
+        }
+    }
+}
+
+
+/* ==========================================================================
+   3.0 Loader
+   ========================================================================== */
+
+/* 3.1 Spinning Sun
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-sun {
+    #loader {
+        width: 50px;
+        height: 50px;
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 50px;
+            height: 50px;
+            background: currentColor;
+            opacity: 0.9;
+            transform-origin: 50% 50%;
+            @include animation(spinReturn 4s ease infinite);
+
+            &:before {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                width: 100%;
+                height: 100%;
+                background: inherit;
+                opacity: 0.9;
+                content: "";
+                transform-origin: 50% 50%;
+                @include transform(rotate(45deg));
+            }
+        }
+    }
+}
+
+
+/* 3.2 Luminous Circles
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-luminous {
+    #loader {
+        width: 100px;
+        height: 60px;
+
+        span,
+        &:before,
+        &:after {
+            position: absolute;
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0.2;
+            background: currentColor;
+        }
+
+        span {
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+            @include animation(lightUp 1.5s linear infinite 0.5s);
+        }
+
+        &:before,
+        &:after {
+            content: "";
+            top: 50%;
+            @include transform(translate(0, -50%));
+        }
+
+        &:before {
+            left: 0;
+            @include animation(lightUp 1.5s linear infinite);
+        }
+
+        &:after {
+            right: 0;
+            @include animation(lightUp 1.5s linear infinite 1s);
+        }
+    }
+}
+
+
+/* 3.3 Wave
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-wave {
+    #loader {
+        width: 60px;
+        height: 30px;
+
+        span,
+        &:before,
+        &:after {
+            position: relative;
+            display: inline-block;
+            width: 6px;
+            height: 100%;
+            background: currentColor;
+        }
+
+        span {
+            margin: 0 16px;
+            @include animation(wave 0.9s linear infinite 0.3s);
+        }
+
+        &:before,
+        &:after {
+            content: "";
+        }
+
+        &:before {
+            @include animation(wave 0.9s linear infinite);
+        }
+
+        &:after {
+            @include animation(wave 0.9s linear infinite 0.6s);
+        }
+    }
+}
+
+
+/* 3.4 Spinning Square
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-square {
+    #loader {
+        width: 50px;
+        height: 50px;
+        transform-origin: 50% 50%;
+        @include animation(spinReturn 4s ease infinite);
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 4px solid currentColor;
+            box-sizing: border-box;
+            transform-origin: 50% 50%;
+            @include transform(rotate(45deg));
+        }
+    }
+}
+
+
+/* 3.5 Drawing Frame
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-frame {
+    #loader {
+        width: 80px;
+        height: 80px;
+        max-width: 90vw;
+
+        &:before,
+        &:after {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: currentColor;
+            content: "";
+        }
+
+        &:before {
+            top: 0;
+            right: 0;
+            left: auto;
+            @include animation(drawframeTop 4s linear infinite);
+        }
+
+        &:after {
+            right: auto;
+            bottom: 0;
+            left: 0;
+            @include animation(drawframeBottom 4s linear infinite 1s);
+        }
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+
+            &:before,
+            &:after {
+                position: absolute;
+                width: 4px;
+                height: 100%;
+                background: currentColor;
+                content: "";
+            }
+
+            &:before {
+                top: auto;
+                right: 0;
+                bottom: 0;
+                @include animation(drawframeRight 4s linear infinite 0.5s);
+            }
+
+            &:after {
+                top: 0;
+                bottom: auto;
+                left: 0;
+                @include animation(drawframeLeft 4s linear infinite 1.5s);
+            }
+        }
+
+        img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+        }
+    }
+}
+
+
+/* 3.6 Loading Custom Image
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-imgloading {
+    #loader {
+        @include customImg;
+
+        img {
+            opacity: 0.3;
+        }
+
+        .imgloading-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 3;
+            display: block;
+            width: 100%;
+            height: 100%;
+            transition: 0s;
+            overflow: hidden;
+        }
+
+        span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 3;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-repeat: no-repeat;
+            background-size: cover;
+            transition: 0s;
+        }
+    }
+
+    &.imgloading-vertical {
+        #loader .imgloading-container {
+            width: 100%;
+            height: 0%;
+            @include animation(imgLoading 6s linear infinite);
+            will-change: height, opacity;
+            transform-origin: 0 100%;
+        }
+
+        &:not(.top-to-bottom) span {
+            background-position: 0 100%;
+        }
+
+        &.top-to-bottom {
+            #loader .imgloading-container {
+                top: 0;
+                bottom: auto;
+                transform-origin: 0 0;
+
+                span {
+                    top: 0;
+                    bottom: auto;
+                }
+            }
+        }
+    }
+
+    &.imgloading-horizontal {
+        #loader .imgloading-container {
+            width: 0%;
+            height: 100%;
+            @include animation(imgLoadingH 6s linear infinite);
+            will-change: width, opacity;
+            transform-origin: 0 0;
+        }
+    }
+}
+
+
+/* 3.7 Rotating Custom Image
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-imgrotating {
+    #loader {
+        @include customImg;
+        backface-visibility: visible;
+        transform-style: preserve-3d;
+    }
+
+    &.twod {
+        #loader {
+            @include animation(imgRotate2d 4s linear infinite);
+        }
+
+        &.counterclockwise {
+            #loader {
+                @include animation(imgRotate2dCounter 4s linear infinite);
+            }
+        }
+    }
+
+    &.threed-y {
+        #loader {
+            @include animation(imgRotate3dY 4s linear infinite);
+        }
+    }
+
+    &.threed-x {
+        #loader {
+            @include animation(imgRotate3dX 4s linear infinite);
+        }
+    }
+
+    &.ease-back {
+        &.twod {
+            #loader {
+                @include animation(imgRotate2dEase 4s cubic-bezier(0.07, 0.29, 0.63, 1.55) infinite);
+            }
+
+            &.counterclockwise {
+                #loader {
+                    @include animation(imgRotate2dEaseCounter 4s cubic-bezier(0.07, 0.29, 0.63, 1.55) infinite);
+                }
+            }
+        }
+
+        &.threed-y {
+            #loader {
+                @include animation(imgRotate3dYEase 4s cubic-bezier(0.07, 0.29, 0.63, 1.55) infinite);
+            }
+        }
+
+        &.threed-x {
+            #loader {
+                @include animation(imgRotate3dXEase 4s cubic-bezier(0.07, 0.29, 0.63, 1.55) infinite);
+            }
+        }
+    }
+}
+
+
+/* 3.8 Bouncing Custom Image
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-imgbouncing {
+    #loader {
+        @include customImg;
+        img {
+            @include animation(imgBounce 1s ease-in-out infinite);
+        }
+
+        &:after {
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 15px;
+            background: #000;
+            border-radius: 50%;
+            opacity: 0.1;
+            @include animation(imgShadow 1s ease-in-out infinite);
+            content: "";
+        }
+    }
+
+    &.loftloader-rolling {
+        #loader {
+            img {
+                @include animation(imgBounceRoll 4s ease-in-out infinite);
+            }
+
+            &:after {
+                @include animation(imgShadowRoll 4s ease-in-out infinite);
+            }
+        }
+    }
+}
+
+
+/* 3.9 Crossing Circles
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-crossing {
+    &.loftloader-blendmode-lighten {
+        #loader {
+            span {
+                &:before,
+                &:after {
+                    mix-blend-mode: lighten;
+                }
+            }
+        }
+    }
+
+    &.loftloader-blendmode-darken {
+        #loader {
+            span {
+                &:before,
+                &:after {
+                    mix-blend-mode: darken;
+                }
+            }
+        }
+    }
+
+    &.loftloader-blendmode-none {
+        #loader {
+            span {
+                &:before,
+                &:after {
+                    opacity: 0.8;
+                }
+            }
+        }
+    }
+
+    #loader {
+        span {
+            display: block;
+            width: 300px;
+            height: 60px;
+            background: transparent;
+
+            &:before,
+            &:after {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 50px;
+                margin-top: 5px;
+                border-radius: 50%;
+                opacity: 1;
+                content: "";
+            }
+
+            &:before {
+                background: cyan;
+                @include animation(crossingLeft 2s ease infinite);
+            }
+
+            &:after {
+                background: red;
+                @include animation(crossingRight 2s ease infinite);
+            }
+        }
+    }
+}
+
+
+/* 3.10 Ducks
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-ducks {
+    #loader {
+        width: 320px;
+        height: 40px;
+        overflow: hidden;
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 40px;
+            background: transparent;
+            @include animation(ducks 6s linear infinite);
+            color: gold;
+
+            &:before,
+            &:after {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                width: 40px;
+                height: 20px;
+                background: currentColor;
+                content: "";
+                box-shadow: -320px 0 0 currentColor, -240px 0 0 currentColor, -160px 0 0 currentColor, -80px 0 0 currentColor, 80px 0 0 currentColor, 160px 0 0 currentColor, 240px 0 0 currentColor, 320px 0 0 currentColor;
+            }
+
+            &:before {
+                top: 5px;
+                left: 14px;
+                width: 30px;
+                height: 15px;
+                border-top-left-radius: 100px;
+                border-top-right-radius: 100px;
+                @include animation(duckHead 0.9s ease infinite);
+            }
+
+            &:after {
+                top: 20px;
+                left: 0;
+                border-bottom-left-radius: 100px;
+                border-bottom-right-radius: 100px;
+            }
+        }
+    }
+}
+
+
+/* 3.11 Rainbow
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-rainbow {
+    #loader {
+        width: 200px;
+        height: 100px;
+        overflow: hidden;
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 200px;
+            height: 100px;
+            overflow: hidden;
+            box-sizing: border-box;
+            transform-origin: 50% 100%;
+            @include transform(rotate(-180deg));
+            @include animation(rainbow 3s linear infinite);
+
+            &:before {
+                position: absolute;
+                top: 30px;
+                left: 30px;
+                display: block;
+                width: 140px;
+                height: 140px;
+                background: transparent;
+                border-radius: 50%;
+                box-shadow: 0 0 0 10px red, 0 0 0 20px gold, 0 0 0 30px cyan;
+                content: "";
+            }
+        }
+    }
+}
+
+
+/* 3.12 Circle Filling
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-circlefilling {
+    #loader {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        border-radius: 100px;
+
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: currentColor;
+            content: "";
+            opacity: 0.1;
+        }
+
+        span {
+            display: block;
+            width: 100px;
+            height: 100px;
+            background: currentColor;
+            transform-origin: 50% 100%;
+            @include transform(scaleY(0));
+            @include animation(circlefill 3s linear infinite);
+        }
+    }
+}
+
+
+/* 3.13 Water Filling
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-waterfilling {
+    #loader {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        border-radius: 100px;
+        @include transform(rotate(179deg));
+
+        &:before {
+            display: block;
+            width: 100px;
+            height: 100px;
+            background: currentColor;
+            transform-origin: 50% 0%;
+            @include transform(scaleY(0));
+            @include animation(circlefill 10s linear infinite);
+            content: "";
+        }
+
+        &:after {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: #FFF;
+            border-radius: 50%;
+            content: "";
+            box-shadow: -17px -25px 0 -4px #FFF,
+                        20px -38px 0 -2px #FFF,
+                        -36px 36px 0 -3px #FFF,
+                        10px 35px 0 -2px rgba(255,255,255,0.8),
+                        0 -100px 0 0 #FFF,
+                        -17px -125px 0 -4px #FFF,
+                        20px -138px 0 -2px #FFF,
+                        -36px -64px 0 -3px #FFF,
+                        10px -65px 0 -2px rgba(255,255,255,0.8);
+            @include animation(bubbles 1s linear infinite);
+        }
+
+        span {
+            display: block;
+            width: 100px;
+            height: 100px;
+            @include transform(translateY(-100%));
+            @include animation(waterupfill 10s linear infinite);
+
+            &:after {
+                position: absolute;
+                top: 0;
+                left: -65px;
+                display: block;
+                width: 130px;
+                height: 130px;
+                background: transparent;
+                border-radius: 50%;
+                box-shadow: 78px -83px 0 -16px currentColor, 0 -70px 0 -17px currentColor, -78px -83px 0 -16px currentColor;
+                @include animation(waterup 2s ease-in-out infinite);
+                content: "";
+            }
+        }
+    }
+}
+
+
+/* 3.14 Crystal
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-crystal {
+    #loader {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        border-radius: 100px;
+        @include animation(crystal 5s linear infinite);
+
+        span {
+            display: block;
+            width: 70px;
+            height: 70px;
+            margin: 15px auto 0;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 -15px 0 0 rgba($primary-color, 0.5),
+                        15px -15px 0 0 rgba($primary-color, 0.5),
+                        15px 0 0 0 rgba($primary-color, 0.5),
+                        15px 15px 0 0 rgba($primary-color, 0.5),
+                        0 15px 0 0 rgba($primary-color, 0.5),
+                        -15px 15px 0 0 rgba($primary-color, 0.5),
+                        -15px 0 0 0 rgba($primary-color, 0.5),
+                        -15px -15px 0 0 rgba($primary-color, 0.5);
+        }
+    }
+}
+
+
+/* 3.15 Petals
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-petals {
+    #loader {
+        width: 100px;
+        height: 100px;
+
+        span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            @include transform(translate(-50%, -50%));
+            display: block;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 -25px 0 -15px transparent,
+                        17.5px -17.5px 0 -15px transparent,
+                        25px 0 0 -15px transparent,
+                        17.5px 17.5px 0 -15px transparent,
+                        0 25px 0 -15px transparent,
+                        -17.5px 17.5px 0 -15px transparent,
+                        -25px 0 0 -15px transparent,
+                        -17.5px -17.5px 0 -15px transparent;
+            @include animation(petals 5s linear infinite);
+        }
+    }
+}
+
+
+/* 3.16 Beating
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-beating {
+    #loader {
+        width: 60px;
+        height: 60px;
+
+        span,
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 50px;
+            opacity: 0;
+        }
+
+        span {
+            @include animation(beat 1.5s linear infinite);
+        }
+
+        &:before {
+            content: "";
+            @include animation(beat 1.5s linear infinite 1s);
+        }
+    }
+}
+
+
+/* 3.17 Fading Custom Image
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-imgfading {
+    #loader {
+        @include customImg;
+
+        img {
+            @include animation(imgFade 3s ease-in-out infinite);
+        }
+    }
+}
+
+
+/* 3.18 Incomplete Ring
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-incomplete-ring {
+    #loader {
+        width: 80px;
+        height: 80px;
+
+        span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 80px;
+            height: 80px;
+            background: none;
+            transform-origin: 50% 50%;
+            @include animation(spin 2s ease infinite);
+
+            &:before,
+            &:after {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                width: 100%;
+                height: 100%;
+                background: inherit;
+                border: 8px solid currentColor;
+                border-radius: 50%;
+                content: "";
+                transform-origin: 50% 50%;
+                box-sizing: border-box;
+            }
+
+            &:before {
+                border-top-color: transparent;
+                border-right-color: transparent;
+                border-bottom-color: transparent;
+            }
+
+            &:after {
+                border-bottom-color: transparent;
+                border-left-color: transparent;
+                @include animation(spin 2s linear 0.5s infinite);
+            }
+        }
+    }
+}
+
+
+/* 3.19 Disable Animations When Loop Once
+   ========================================================================== */
+
+#loftloader-wrapper.loftloader-once {
+    &.loftloader-rainbow,
+    &.loftloader-circlefilling,
+    &.loftloader-waterfilling,
+    &.loftloader-petals {
+        #loader span {
+            @include animation(none);
+        }
+    }
+
+    &.loftloader-imgloading {
+        #loader {
+            .imgloading-container {
+                @include animation(none);
+            }
+        }
+    }
+
+    &.loftloader-waterfilling {
+        #loader {
+            &:before {
+                @include animation(none);
+            }
+        }
+    }
+}
+
+
+/* ==========================================================================
+   4.0 Progress
+   ========================================================================== */
+
+/* 4.1 Percentage
+   ========================================================================== */
+
+#loftloader-wrapper span.percentage {
+    display: block;
+    font-size: 16px;
+    font-weight: 100;
+    letter-spacing: 0.1em;
+    line-height: 1;
+
+    &.front {
+        z-index: 1003;
+    }
+
+    &.pos-absolute {
+        position: absolute;
+
+        &.top {
+            top: 0;
+        }
+
+        &.right {
+            right: 0;
+        }
+
+        &.bottom {
+            bottom: 0;
+        }
+
+        &.left {
+            left: 0;
+        }
+
+        &.center {
+            left: 50%;
+            @include transform(translateX(-50%));
+        }
+    }
+}
+
+#loftloader-wrapper:not(.loftloader-none) #loader + span.percentage:not(.middle) {
+    margin-top: 24px;
+}
+
+#loftloader-wrapper:not(.loftloader-none) span.percentage.middle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    @include transform(translate(-50%, -50%));
+    margin: 0;
+}
+
+#loftloader-wrapper:not(.loftloader-none) .with-percentage span.percentage:not(.middle) {
+    margin-bottom: -18px;
+}
+
+
+/* 4.2 Progress Bar
+   ========================================================================== */
+
+#loftloader-wrapper span.bar {
+    position: relative;
+    z-index: 1000;
+    display: block;
+    width: 100vw;
+    max-width: 100vw;
+    height: 4px;
+    margin: 0 auto;
+    color: $primary-color;
+
+    @media screen and (max-width: 500px) {
+        & {
+            min-width: 220px;
+        }
+    }
+
+    &:before,
+    span.load {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+    }
+
+    &:before {
+        content: "";
+        opacity: 0.1;
+        will-change: transform;
+    }
+
+    span.load {
+        transform-origin: 0% 0%;
+    }
+
+    &.top,
+    &.bottom {
+        position: fixed;
+        left: 50%;
+        @include transform(translateX(-50%));
+        margin-top: 0;
+    }
+
+    &.top {
+        top: 0;
+    }
+
+    &.bottom {
+        bottom: 0;
+    }
+
+    span.load-count {
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        @include transform(translateY(100%));
+        font-size: 16px;
+        font-weight: 100;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        color: currentColor;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    &.bottom span.load-count {
+        top: -5px;
+        bottom: auto;
+        @include transform(translateY(-100%));
+    }
+}
+
+#loftloader-wrapper:not(.loftloader-none) #loader + span.bar {
+    margin-top: 50px;
+}
+
+#loftloader-wrapper .loader-message ~ span.bar {
+    margin-top: 24px;
+}
+
+
+/* ==========================================================================
+   5.0 Message
+   ========================================================================== */
+
+.loader-message {
+    width: 100vw;
+    padding: 0 20px;
+    margin: 0 auto;
+    font-size: 16px;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+    word-wrap: break-word;
+    box-sizing: border-box;
+
+    #loftloader-wrapper:not(.loftloader-none) .loader-inner > &:first-child {
+        margin-bottom: 24px;
+    }
+
+    #loftloader-wrapper * + & {
+        margin-top: 24px;
+    }
+
+    #loftloader-wrapper.loftloader-none #loader + & {
+        margin-top: 0;
+    }
+
+    #loftloader-wrapper.loftloader-none .with-percentage + & {
+        margin-top: 6px;
+    }
+}
+
+
+/* ==========================================================================
+   6.0 Close Button
+   ========================================================================== */
+
+.loader-close-button {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    z-index: 99999;
+    box-sizing: border-box;
+    width: auto;
+    min-width: 35px;
+    height: 35px;
+    padding: 5px 30px 5px 5px;
+    border-radius: 999px;
+    background: rgba(#000, 0.3);
+    color: #FFF;
+    font-size: 12px;
+    line-height: 25px;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(#000,0.7);
+    }
+
+    &:before,
+    &:after {
+        position: absolute;
+        top: 16px;
+        right: 9px;
+        display: block;
+        width: 18px;
+        height: 2px;
+        transform-origin: 50% 50%;
+        content: "";
+        background: #FFF;
+    }
+
+    &:before {
+        @include transform(rotate(45deg));
+    }
+
+    &:after {
+        @include transform(rotate(135deg));
+    }
+
+    .screen-reader-text {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        border: 0;
+        clip: rect(1px, 1px, 1px, 1px);
+        clip-path: inset(50%);
+        overflow: hidden;
+        word-wrap: normal !important;
+    }
+
+    .close-des {
+        padding: 0 5px;
+        font-size: 12px;
+    }
+}

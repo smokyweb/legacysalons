@@ -1,0 +1,114 @@
+.pfv_video_fadelayout {
+  display: none;
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: slategrey;
+  z-index: 1001;
+  -moz-opacity: 0.8;
+  opacity: 0.98;
+  filter: alpha(opacity=80);
+}
+
+.pfv_vvideo_lightbox {
+  display: none;
+  background: #e1e1e1;
+  margin: 0 auto;
+  max-width: 854px;
+  max-height: 480px;
+  position: fixed;
+  z-index: 1002;
+  top: 25%;
+  padding: 3px;
+  -webkit-box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  -moz-box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  justify-content: center;
+  left: 0;
+  /*bottom: 0;*/
+  right: 0;
+}
+
+#boxclose {
+  float: right;
+  cursor: pointer;
+  color: #fff;
+  border: 1px solid #AEAEAE;
+  border-radius: 3px;
+  background: #222222;
+  font-size: 31px;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 0px;
+  padding: 11px 3px;
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 1002;
+  opacity: 0.9;
+  height: auto;
+}
+
+.boxclose:before {
+  content: "×";
+}
+
+#pfv_video_fadelayout:hover ~ #boxclose {
+  display:none;
+}
+#pfviframeVideo {
+    width: 100% !important;
+}
+.modelpup {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  position: relative;
+}
+
+button.pfv-vvideo-playbtton {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 68px;
+    height: 48px;
+    margin-left: -34px;
+    margin-top: -24px;
+    -moz-transition: opacity .25s cubic-bezier(0.0,0.0,0.2,1);
+    -webkit-transition: opacity .25s cubic-bezier(0.0,0.0,0.2,1);
+    transition: opacity .25s cubic-bezier(0.0,0.0,0.2,1);
+    z-index: 63;
+}
+
+.pfv_htmlvideo {
+    width: 100%!important;
+}
+#outputHtmlVideo img {
+    min-width: 370px;
+}
+
+button.pfv-vvideo-playbtton.ytp-button {
+  border: 0;
+  border-radius: 100%;
+  height: 70px;
+  width: 70px;
+  background: rgb(0 0 0 / 75%);
+}
+
+button.pfv-vvideo-playbtton.ytp-button img{
+  margin-top: -5px;
+  margin-left: 0px;
+}
+
+@media only screen and (max-width: 1024px) and (min-width: 768px) {
+.pfv_vvideo_lightbox {
+    max-width: 700px;
+    max-height: 530px;
+    top: 10%;
+}
+}
+.pfvthumvido img.vidthumimg {
+    width: -webkit-fill-available;
+}
