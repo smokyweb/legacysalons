@@ -405,7 +405,7 @@ function suites_rentals_shortcode($atts) {
                                 <?php endif; ?>
                             </ul>
 
-                            <a href="<?php echo (!empty($tourLink)) ? htmlspecialchars($tourLink) : 'javascript:void(0)'; ?>" class="view-details">View Details</a>
+                            <a href="<?php echo (!empty($tourLink)) ? htmlspecialchars($tourLink) : 'javascript:void(0)'; ?>" class="view-details">Learn More</a>
                         </div>
 
                     </div>
