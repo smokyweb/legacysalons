@@ -1,0 +1,93 @@
+/* Suite matching footer popup */
+.suite-matching-modal {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 10000002;
+	align-items: center;
+	justify-content: center;
+	padding: 24px 16px;
+}
+
+.suite-matching-modal.is-open {
+	display: flex;
+}
+
+.suite-matching-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.suite-matching-modal__dialog {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 740px;
+	max-height: calc(100vh - 48px);
+	max-height: calc(100dvh - 48px);
+	overflow: auto;
+	background: rgb(253 228 219 / 95%);
+	border-radius: 7px;
+	padding: 24px;
+}
+
+.suite-matching-modal__close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	width: 40px;
+	height: 40px;
+	border: none;
+	border-radius: 50%;
+	background: #f3f3f3;
+	color: #333;
+	font-size: 28px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.suite-matching-popup__title {
+	margin: 0 0 16px;
+	font-family: 'Jost', sans-serif;
+}
+
+/* Personal info step — works from homepage or inside suite-matching modal */
+#suite-matching-personal-modal,
+#personalInfoModal.custom-modal {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 10000003;
+	background: rgba(0, 0, 0, 0.6);
+	overflow: auto;
+}
+
+#suite-matching-personal-modal.is-open,
+#personalInfoModal.custom-modal.is-open,
+#personalInfoModal.custom-modal[aria-hidden="false"] {
+	display: block !important;
+}
+
+.suite-matching-personal-modal__content,
+#personalInfoModal .custom-modal-content {
+	width: min(568px, calc(100% - 32px));
+	margin: 40px auto;
+	padding: 30px 40px;
+	background: #f8f9fa;
+	border-radius: 10px;
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.suite-matching-personal-modal__close,
+#personalInfoModal .close-modal {
+	position: absolute;
+	top: 12px;
+	right: 16px;
+	cursor: pointer;
+	font-size: 28px;
+	line-height: 1;
+}

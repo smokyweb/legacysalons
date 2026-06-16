@@ -1,0 +1,22 @@
+# WordPress uploads (media files)
+wp-content/uploads/
+!wp-content/uploads/wpseo-redirects/
+!wp-content/uploads/rmp-menu/
+
+# Caches
+wp-content/cache/
+wp-content/wflogs/geoip.mmdb
+lscache/
+.tmb/
+
+# Temp/debug files
+error_log
+*.log
+wp-content/temp-write-test-*
+
+# Node/build
+node_modules/
+.DS_Store
+
+# Sensitive config (keep wp-config tracked for dev reference)
+# wp-config.php
