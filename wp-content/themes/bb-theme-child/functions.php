@@ -104,7 +104,7 @@ function bb_child_render_signup_suite_modal() {
     <div class="signup-a-suite-modal__backdrop" data-signup-modal-close></div>
     <div class="signup-a-suite-modal__dialog">
      <div class="signup-a-suite-modal__header">
-        <h2 id="signup-a-suite-modal-title" class="signup-a-suite-heading"><?php esc_html_e( 'SignUp For A Suite', 'bb-theme-child' ); ?></h2>
+        <h2 id="signup-a-suite-modal-title" class="signup-a-suite-heading"><?php esc_html_e( 'Find A Suite', 'bb-theme-child' ); ?></h2>
         <button type="button" class="signup-a-suite-modal__close" data-signup-modal-close aria-label="<?php esc_attr_e( 'Close', 'bb-theme-child' ); ?>">
           <span class="signup-a-suite-modal__close-icon" aria-hidden="true"></span>
         </button>
