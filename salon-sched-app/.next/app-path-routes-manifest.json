@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/dashboard/bookings/page": "/dashboard/bookings",
+  "/dashboard/calendar/page": "/dashboard/calendar",
+  "/dashboard/clients/page": "/dashboard/clients",
+  "/dashboard/marketing/page": "/dashboard/marketing",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/payments/page": "/dashboard/payments",
+  "/dashboard/services/page": "/dashboard/services",
+  "/dashboard/settings/page": "/dashboard/settings",
+  "/dashboard/voice-agent/page": "/dashboard/voice-agent",
+  "/discover/page": "/discover",
+  "/favicon.ico/route": "/favicon.ico",
+  "/login/page": "/login",
+  "/page": "/",
+  "/pro/[slug]/page": "/pro/[slug]",
+  "/signup/page": "/signup"
+}

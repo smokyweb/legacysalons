@@ -1,12 +1,12 @@
-var wpAjaxUrl = 'https://legacysalon.betaplanets.com/wp-admin/admin-ajax.php';var flBuilderUrl = 'https://legacysalon.betaplanets.com/wp-content/plugins/bb-plugin/';var FLBuilderLayoutConfig = {
+var wpAjaxUrl = 'https://legacysalonsarlington.com/wp-admin/admin-ajax.php';var flBuilderUrl = 'https://legacysalonsarlington.com/wp-content/plugins/bb-plugin/';var FLBuilderLayoutConfig = {
 	anchorLinkAnimations : {
 		duration 	: 1000,
 		easing		: 'swing',
 		offset 		: 100
 	},
 	paths : {
-		pluginUrl : 'https://legacysalon.betaplanets.com/wp-content/plugins/bb-plugin/',
-		wpAjaxUrl : 'https://legacysalon.betaplanets.com/wp-admin/admin-ajax.php'
+		pluginUrl : 'https://legacysalonsarlington.com/wp-content/plugins/bb-plugin/',
+		wpAjaxUrl : 'https://legacysalonsarlington.com/wp-admin/admin-ajax.php'
 	},
 	breakpoints : {
 		small  : 768,
