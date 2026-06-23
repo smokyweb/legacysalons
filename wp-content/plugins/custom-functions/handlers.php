@@ -180,7 +180,8 @@
         'rewrite' => array('slug' => 'stylist-service'),
         );
 
-        register_taxonomy('stylist_service', array('stylist','luxury_suites'), $args);
+        // register_taxonomy('stylist_service', array('stylist','luxury_suites'), $args);
+        register_taxonomy('stylist_service', array('stylist'), $args);
     }
     add_action('init', 'register_stylist_services_taxonomy');
 
@@ -564,6 +565,38 @@
     add_action('admin_menu', 'hide_admin_menus_for_admin', 999);
 
 
+    // Disable comments on frontend
+    add_filter( 'comments_open', '__return_false', 20, 2 );
+    add_filter( 'pings_open', '__return_false', 20, 2 );
+    add_filter( 'comments_array', '__return_empty_array', 10, 2 );
+
+    // Replace comment template with blank to prevent frontend rendering
+    add_filter( 'comments_template', function( $theme_template ) {
+        return ABSPATH . 'wp-includes/theme-compat/comments.php';
+    }, 20 );
+
+    // Remove comment support from all post types
+    add_action( 'init', function() {
+        $post_types = get_post_types();
+        foreach ( $post_types as $post_type ) {
+            if ( post_type_supports( $post_type, 'comments' ) ) {
+                remove_post_type_support( $post_type, 'comments' );
+                remove_post_type_support( $post_type, 'trackbacks' );
+            }
+        }
+    }, 100 );
+
+    // Remove comment reply script
+    add_action( 'wp_enqueue_scripts', function() {
+        wp_deregister_script( 'comment-reply' );
+    } );
+
+    // CSS fallback to hide any hardcoded comment sections
+    add_action( 'wp_head', function() {
+        echo '<style>#comments, .comments-area, .comment-respond, .comments-title { display: none !important; }</style>';
+    } );
+
+
 
     // Add admin menu for FAQs
     function faq_admin_menu() {
@@ -903,6 +936,141 @@
 
         wp_die();
     }
+    
+    /**
+     * Post meta: hide stylist from public listing shortcodes.
+     */
+    function legacy_get_stylist_hide_from_listing_meta_key() {
+        return 'hide_from_stylist_listing';
+    }
+
+    /**
+     * @param int $post_id Stylist post ID.
+     * @return bool
+     */
+    function legacy_stylist_is_hidden_from_listing( $post_id ) {
+        $post_id = absint( $post_id );
+        if ( ! $post_id ) {
+            return false;
+        }
+
+        return '1' === get_post_meta( $post_id, legacy_get_stylist_hide_from_listing_meta_key(), true );
+    }
+
+    /**
+     * Meta query clause: only stylists that are not restricted from listing.
+     *
+     * @return array<string, mixed>
+     */
+    function legacy_get_stylist_listing_visibility_meta_query() {
+        $meta_key = legacy_get_stylist_hide_from_listing_meta_key();
+
+        return array(
+            'relation' => 'OR',
+            array(
+                'key'     => $meta_key,
+                'compare' => 'NOT EXISTS',
+            ),
+            array(
+                'key'     => $meta_key,
+                'value'   => '1',
+                'compare' => '!=',
+            ),
+        );
+    }
+
+    /**
+     * Append listing-visibility filter to a WP_Query/get_posts args array.
+     *
+     * @param array<string, mixed> $args Query args (passed by reference).
+     */
+    function legacy_append_stylist_listing_visibility_meta_query( array &$args ) {
+        if ( ! isset( $args['meta_query'] ) || ! is_array( $args['meta_query'] ) ) {
+            $args['meta_query'] = array();
+        }
+
+        $args['meta_query'][] = legacy_get_stylist_listing_visibility_meta_query();
+
+        if ( count( $args['meta_query'] ) > 1 ) {
+            $args['meta_query']['relation'] = 'AND';
+        }
+    }
+
+    add_action( 'add_meta_boxes', 'legacy_add_stylist_listing_visibility_meta_box' );
+    function legacy_add_stylist_listing_visibility_meta_box() {
+        add_meta_box(
+            'legacy_stylist_listing_visibility',
+            __( 'Stylist Listing', 'custom-functions' ),
+            'legacy_render_stylist_listing_visibility_meta_box',
+            'stylist',
+            'normal',
+            'high'
+        );
+    }
+
+    /**
+     * @param WP_Post $post Current stylist post.
+     */
+    function legacy_render_stylist_listing_visibility_meta_box( $post ) {
+        if ( ! $post instanceof WP_Post ) {
+            return;
+        }
+
+        wp_nonce_field( 'legacy_save_stylist_listing_visibility', 'legacy_stylist_listing_visibility_nonce' );
+
+        $meta_key = legacy_get_stylist_hide_from_listing_meta_key();
+        $hidden   = legacy_stylist_is_hidden_from_listing( $post->ID );
+        ?>
+        <p>
+            <label>
+                <input
+                    type="checkbox"
+                    name="<?php echo esc_attr( $meta_key ); ?>"
+                    value="1"
+                    <?php checked( $hidden ); ?>
+                />
+                <?php esc_html_e( 'Restrict from listing on stylist page and homepage', 'custom-functions' ); ?>
+            </label>
+        </p>
+        <?php
+    }
+
+    add_action( 'save_post_stylist', 'legacy_save_stylist_listing_visibility_meta_box', 10, 2 );
+    /**
+     * @param int     $post_id Post ID.
+     * @param WP_Post $post    Post object.
+     */
+    function legacy_save_stylist_listing_visibility_meta_box( $post_id, $post ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        if ( ! isset( $_POST['legacy_stylist_listing_visibility_nonce'] ) ||
+            ! wp_verify_nonce(
+                sanitize_text_field( wp_unslash( $_POST['legacy_stylist_listing_visibility_nonce'] ) ),
+                'legacy_save_stylist_listing_visibility'
+            ) ) {
+            return;
+        }
+
+        if ( ! $post instanceof WP_Post || 'stylist' !== $post->post_type ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        $meta_key = legacy_get_stylist_hide_from_listing_meta_key();
+
+        if ( ! empty( $_POST[ $meta_key ] ) ) {
+            update_post_meta( $post_id, $meta_key, '1' );
+            return;
+        }
+
+        delete_post_meta( $post_id, $meta_key );
+    }
+    
 
     // Stlist Availability
     // Add metabox
@@ -1221,6 +1389,76 @@
         }
     }
     add_action('save_post', 'save_stylist_gallery');
+    
+    
+    /**
+     * Stylist experience (years) — digits only.
+     */
+    function legacy_sanitize_stylist_experience_value( $value ) {
+       $digits = preg_replace( '/\D+/', '', (string) $value );
+
+        return substr( $digits, 0, 3 );
+    }
+
+    function legacy_configure_stylist_experience_field( $field ) {
+        $field['type']   = 'number';
+        $field['min']    = 0;
+        $field['max']    = 999;
+        $field['step']   = 1;
+        $field['append'] = '';
+
+        return $field;
+    }
+    add_filter( 'acf/load_field/name=experience', 'legacy_configure_stylist_experience_field' );
+
+    function legacy_validate_stylist_experience_value( $valid, $value, $field, $input ) {
+        if ( true !== $valid || '' === $value ) {
+            return $valid;
+        }
+
+        if ( ! preg_match( '/^\d{1,3}$/', (string) $value ) ) {
+            return __( 'Experience must be a whole number up to 3 digits.', 'custom-functions' );
+        }
+
+        if ( (int) $value > 999 ) {
+            return __( 'Experience cannot be more than 999 years.', 'custom-functions' );
+        }
+
+        return $valid;
+    }
+    add_filter( 'acf/validate_value/name=experience', 'legacy_validate_stylist_experience_value', 10, 4 );
+
+    function legacy_update_stylist_experience_value( $value, $post_id, $field ) {
+        if ( '' === $value || null === $value ) {
+            return '';
+        }
+
+        return legacy_sanitize_stylist_experience_value( $value );
+    }
+    add_filter( 'acf/update_value/name=experience', 'legacy_update_stylist_experience_value', 10, 3 );
+
+    function legacy_sanitize_stylist_experience_on_save( $post_id ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        $experience = get_post_meta( $post_id, 'experience', true );
+
+        if ( '' === $experience || null === $experience ) {
+            return;
+        }
+
+        $sanitized = legacy_sanitize_stylist_experience_value( $experience );
+
+        if ( $sanitized !== (string) $experience ) {
+            update_post_meta( $post_id, 'experience', $sanitized );
+        }
+    }
+    add_action( 'save_post_stylist', 'legacy_sanitize_stylist_experience_on_save', 20 );
 
 
 
@@ -1820,6 +2058,22 @@ function st_is_valid_video_attachment( $attachment_id ) {
             echo ' enctype="multipart/form-data"';
         }
     }
+    
+    /**
+ * Flag: featured suite swiper shortcode rendered in slider mode (for conditional hooks).
+ */
+function custom_functions_mark_featured_suite_swiper_used() {
+    global $custom_functions_featured_suite_swiper_used;
+    $custom_functions_featured_suite_swiper_used = true;
+}
+
+/**
+ * @return bool
+ */
+function custom_functions_is_featured_suite_swiper_used() {
+    global $custom_functions_featured_suite_swiper_used;
+    return ! empty( $custom_functions_featured_suite_swiper_used );
+}
 
 /**
  * Image size slug for suite card "before" overlay thumbnails (featured_suites shortcode).
@@ -1914,8 +2168,8 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
             'signup_suite_request',
             array(
                 'labels'              => array(
-                    'name'          => __( 'SignUp Suite Requests', 'custom-widget' ),
-                    'singular_name' => __( 'SignUp Suite Request', 'custom-widget' ),
+                    'name'          => __( 'Find A Suite Request', 'custom-widget' ),
+                    'singular_name' => __( 'Find A Suite Request', 'custom-widget' ),
                 ),
                 'public'              => false,
                 'show_ui'             => false,
@@ -1938,28 +2192,61 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         );
     }
 
-    function signup_a_suite_get_reason_labels() {
-        return array(
-            'renting_suite'     => __( 'Renting a salon suite', 'custom-widget' ),
-            'scheduling_tour'   => __( 'Scheduling a tour', 'custom-widget' ),
-            'pricing_questions' => __( 'Questions about pricing', 'custom-widget' ),
-            'general_inquiry'   => __( 'General inquiry', 'custom-widget' ),
-            'other'             => __( 'Other', 'custom-widget' ),
+    
+      /**
+     * Stylist service taxonomy options for the Find a Suite form.
+     *
+     * @return array<string, string> Term slug => label.
+     */
+    function signup_a_suite_get_profession_service_options() {
+        $terms = get_terms(
+            array(
+                'taxonomy'   => 'stylist_service',
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            )
         );
+          if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            return array();
+        }
+
+        $options = array();
+
+        foreach ( $terms as $term ) {
+            if ( $term instanceof WP_Term ) {
+                $options[ $term->slug ] = $term->name;
+            }
+        }
+
+        return $options;
     }
 
     function signup_a_suite_get_location_labels() {
         return array(
-            'village' => __( 'Village', 'custom-widget' ),
-            'cooper'  => __( 'Cooper', 'custom-widget' ),
+            'little_road' => __( 'Little Road', 'custom-widget' ),
+            'cooper'      => __( 'Cooper', 'custom-widget' ),
+        );
+    }
+
+    /**
+     * Legacy location values mapped to current preferred_location slugs.
+     *
+     * @return array<string, string>
+     */
+    function signup_a_suite_get_location_aliases() {
+        return array(
+            'village'     => 'little_road',
+            'little-road' => 'little_road',
+            'little road' => 'little_road',
         );
     }
 
     add_action( 'admin_menu', 'signup_suite_requests_admin_menu' );
     function signup_suite_requests_admin_menu() {
         add_menu_page(
-            __( 'SignUp Suite Requests', 'custom-widget' ),
-            __( 'SignUp Suite Requests', 'custom-widget' ),
+           __( 'Find A Suite Request', 'custom-widget' ),
+            __( 'Find A Suite Request', 'custom-widget' ),
             'manage_options',
             'signup-suite-requests',
             'render_signup_suite_requests_admin_page',
@@ -1988,7 +2275,7 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         );
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'SignUp Suite Requests', 'custom-widget' ); ?></h1>
+           <h1><?php esc_html_e( 'Find A Suite Request', 'custom-widget' ); ?></h1>
             <?php if ( ! empty( $requests ) ) : ?>
                 <p class="description">
                     <?php
@@ -2012,7 +2299,7 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
                             <th><?php esc_html_e( 'Phone', 'custom-widget' ); ?></th>
                             <th><?php esc_html_e( 'Preferred Suite', 'custom-widget' ); ?></th>
                             <th><?php esc_html_e( 'Preferred Location', 'custom-widget' ); ?></th>
-                            <th><?php esc_html_e( 'Reason', 'custom-widget' ); ?></th>
+                             <th><?php esc_html_e( 'Profession/Services', 'custom-widget' ); ?></th>
                             <th><?php esc_html_e( 'Discount (%)', 'custom-widget' ); ?></th>
                             <th><?php esc_html_e( 'Message', 'custom-widget' ); ?></th>
                             <th style="width: 120px;"><?php esc_html_e( 'Submitted', 'custom-widget' ); ?></th>
@@ -2031,9 +2318,12 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
                             if ( '' === $location ) {
                                 $location = get_post_meta( $request_id, 'preferred_location', true );
                             }
-                            $reason     = get_post_meta( $request_id, 'reason_label', true );
-                            if ( '' === $reason ) {
-                                $reason = get_post_meta( $request_id, 'reason', true );
+                            $profession_services = get_post_meta( $request_id, 'profession_services_label', true );
+                            if ( '' === $profession_services ) {
+                                $profession_services = get_post_meta( $request_id, 'reason_label', true );
+                            }
+                            if ( '' === $profession_services ) {
+                                $profession_services = get_post_meta( $request_id, 'reason', true );
                             }
                             // $message = get_post_meta( $request_id, 'message', true );
                             $message  = get_post_meta( $request_id, 'message', true );
@@ -2055,7 +2345,7 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
                                 <td><?php echo esc_html( $phone ); ?></td>
                                 <td><?php echo esc_html( $preferred_suite ? $preferred_suite : '—' ); ?></td>
                                 <td><?php echo esc_html( $location ); ?></td>
-                                <td><?php echo esc_html( $reason ); ?></td>
+                                 <td><?php echo esc_html( $profession_services ? $profession_services : '—' ); ?></td>
                                 <td><?php echo esc_html( $discount ); ?></td>
                                 <td style="max-width: 320px; white-space: pre-wrap;"><?php echo esc_html( $message ); ?></td>
                                 <td><?php echo esc_html( get_the_date( 'M j, Y', $request ) ); ?></td>
@@ -2079,14 +2369,41 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         $phone              = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
         $preferred_suite    = sanitize_text_field( wp_unslash( $_POST['preferred_suite'] ?? '' ) );
         $preferred_location = sanitize_text_field( wp_unslash( $_POST['preferred_location'] ?? '' ) );
-        $reason              = sanitize_text_field( wp_unslash( $_POST['reason'] ?? '' ) );
+         if ( function_exists( 'legacy_normalize_preferred_location_slug' ) ) {
+            $normalized_location = legacy_normalize_preferred_location_slug( $preferred_location );
+            if ( '' !== $normalized_location ) {
+                $preferred_location = $normalized_location;
+            }
+        }
+         $profession_services_raw = isset( $_POST['profession_services'] ) ? wp_unslash( $_POST['profession_services'] ) : array();
+        if ( ! is_array( $profession_services_raw ) ) {
+            $profession_services_raw = array( $profession_services_raw );
+        }
         $message             = sanitize_textarea_field( wp_unslash( $_POST['message'] ?? '' ) );
         $discount_percentage = isset( $_POST['discount_percentage'] ) ? absint( wp_unslash( $_POST['discount_percentage'] ) ) : 0;
         if ( $discount_percentage > 100 ) {
             $discount_percentage = 100;
         }
 
-        if ( '' === $first_name || '' === $last_name || '' === $email || '' === $phone || '' === $preferred_location || '' === $reason || '' === $message ) {
+      $service_options        = signup_a_suite_get_profession_service_options();
+        $profession_services    = array();
+        $profession_service_labels = array();
+
+        foreach ( $profession_services_raw as $service_slug ) {
+            $service_slug = sanitize_title( (string) $service_slug );
+            if ( '' === $service_slug || ! isset( $service_options[ $service_slug ] ) ) {
+                continue;
+            }
+            if ( in_array( $service_slug, $profession_services, true ) ) {
+                continue;
+            }
+            $profession_services[]         = $service_slug;
+            $profession_service_labels[] = $service_options[ $service_slug ];
+        }
+
+        $profession_services_label = implode( ', ', $profession_service_labels );
+
+        if ( '' === $first_name || '' === $last_name || '' === $email || '' === $phone || '' === $preferred_location || '' === $message ) {
             wp_send_json_error(
                 array(
                     'message' => __( 'Please fill in all required fields.', 'custom-widget' ),
@@ -2104,9 +2421,15 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
             );
         }
 
-        $reason_labels   = signup_a_suite_get_reason_labels();
+         if ( empty( $profession_services ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please select at least one profession/service.', 'custom-widget' ),
+                ),
+                400
+            );
+        }
         $location_labels = signup_a_suite_get_location_labels();
-        $reason_label    = $reason_labels[ $reason ] ?? $reason;
         $location_label  = $location_labels[ $preferred_location ] ?? $preferred_location;
 
         if ( ! isset( $location_labels[ $preferred_location ] ) ) {
@@ -2145,8 +2468,10 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         update_post_meta( $post_id, 'preferred_suite', $preferred_suite );
         update_post_meta( $post_id, 'preferred_location', $preferred_location );
         update_post_meta( $post_id, 'preferred_location_label', $location_label );
-        update_post_meta( $post_id, 'reason', $reason );
-        update_post_meta( $post_id, 'reason_label', $reason_label );
+        update_post_meta( $post_id, 'profession_services', $profession_services );
+        update_post_meta( $post_id, 'profession_services_label', $profession_services_label );
+        update_post_meta( $post_id, 'reason', implode( ',', $profession_services ) );
+        update_post_meta( $post_id, 'reason_label', $profession_services_label );
         update_post_meta( $post_id, 'message', $message );
         update_post_meta( $post_id, 'submitted_at', $submitted_at );
         update_post_meta( $post_id, 'discount_percentage', $discount_percentage );
@@ -2161,7 +2486,7 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
             "Phone: {$phone}\n" .
             ( $preferred_suite ? "Preferred Suite: {$preferred_suite}\n" : '' ) .
             "Preferred Location: {$location_label}\n" .
-            "Reason: {$reason_label}\n";
+            "Profession/Services: {$profession_services_label}\n";
 
             if ( $discount_percentage > 0 ) {
                 $body .= "Promotional Discount: {$discount_percentage}%\n";
@@ -2180,6 +2505,8 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
             )
         );
     }
+    
+    
 
 
 /**
@@ -2187,6 +2514,202 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
      * Luxury Suites — Location (sidebar) + Gallery (images/videos)
      * -----------------------------------------------------------------------------
      */
+     
+     
+    /**
+     * Get raw suite location text from post meta (supports ACF array values).
+     *
+     * @param int $suite_id Luxury suite post ID.
+     * @return string
+     */
+    function legacy_get_suite_location_text( $suite_id ) {
+        $location_text = get_post_meta( $suite_id, 'location', true );
+
+        if ( is_array( $location_text ) ) {
+            $location_text = $location_text['value'] ?? $location_text['label'] ?? '';
+        }
+
+        return trim( (string) $location_text );
+    }
+
+    /**
+     * Normalize a location label/slug to signup preferred_location (little_road|cooper).
+     *
+     * @param string $value Location text or slug.
+     * @return string
+     */
+    function legacy_normalize_preferred_location_slug( $value ) {
+        $value = strtolower( trim( sanitize_text_field( (string) $value ) ) );
+
+        if ( '' === $value || ! function_exists( 'signup_a_suite_get_location_labels' ) ) {
+            return '';
+        }
+
+        if ( function_exists( 'signup_a_suite_get_location_aliases' ) ) {
+            $aliases = signup_a_suite_get_location_aliases();
+
+            if ( isset( $aliases[ $value ] ) ) {
+                return $aliases[ $value ];
+            }
+
+            $value_underscore = str_replace( '-', '_', $value );
+            if ( isset( $aliases[ $value_underscore ] ) ) {
+                return $aliases[ $value_underscore ];
+            }
+        }
+
+        foreach ( signup_a_suite_get_location_labels() as $slug => $label ) {
+            $label_lower = strtolower( $label );
+            $slug_dashed = str_replace( '_', '-', $slug );
+
+            if ( $value === $slug || $value === $slug_dashed || $value === $label_lower ) {
+                return $slug;
+            }
+
+            if ( false !== strpos( $value, $slug ) || false !== strpos( $value, $label_lower ) ) {
+                return $slug;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Resolve our_locations post ID from a location text value.
+     *
+     * @param string $location_text Location label or slug.
+     * @return int
+     */
+    function legacy_resolve_suite_location_id_from_text( $location_text ) {
+        $location_text = trim( (string) $location_text );
+
+        if ( '' === $location_text ) {
+            return 0;
+        }
+
+        $locations = get_posts(
+            array(
+                'post_type'      => 'our_locations',
+                'post_status'    => 'publish',
+                'posts_per_page' => -1,
+                'orderby'        => 'title',
+                'order'          => 'ASC',
+            )
+        );
+
+        $needle = strtolower( $location_text );
+
+        foreach ( $locations as $location_post ) {
+            $title = strtolower( get_the_title( $location_post->ID ) );
+            $slug  = strtolower( $location_post->post_name );
+
+            if ( $needle === $title || $needle === $slug ) {
+                return (int) $location_post->ID;
+            }
+
+            if ( false !== strpos( $title, $needle ) || false !== strpos( $needle, $title ) ) {
+                return (int) $location_post->ID;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get selected location post ID for a suite.
+     *
+     * @param int $suite_id Luxury suite post ID.
+     * @return int
+     */
+    function legacy_get_suite_location_id( $suite_id ) {
+        $location_id = absint( get_post_meta( $suite_id, 'suite_location_id', true ) );
+
+        if ( $location_id && 'our_locations' === get_post_type( $location_id ) ) {
+            return $location_id;
+        }
+
+        return legacy_resolve_suite_location_id_from_text( legacy_get_suite_location_text( $suite_id ) );
+    }
+
+    /**
+     * Get selected location object for a suite.
+     *
+     * @param int $suite_id Luxury suite post ID.
+     * @return WP_Post|null
+     */
+    function legacy_get_suite_location_post( $suite_id ) {
+        $location_id = legacy_get_suite_location_id( $suite_id );
+        if ( ! $location_id || 'our_locations' !== get_post_type( $location_id ) ) {
+            return null;
+        }
+
+        $location = get_post( $location_id );
+        return $location instanceof WP_Post ? $location : null;
+    }
+
+    /**
+     * Map suite location meta to SignUp form preferred_location value (little_road|cooper).
+     *
+     * @param int $suite_id Luxury suite post ID.
+     * @return string Empty string when unknown.
+     */
+    function legacy_get_suite_preferred_location_slug( $suite_id ) {
+        $location = legacy_get_suite_location_post( $suite_id );
+
+        if ( $location ) {
+            $slug = legacy_normalize_preferred_location_slug( $location->post_name );
+
+            if ( '' !== $slug ) {
+                return $slug;
+            }
+
+            $slug = legacy_normalize_preferred_location_slug( get_the_title( $location->ID ) );
+
+            if ( '' !== $slug ) {
+                return $slug;
+            }
+        }
+
+        return legacy_normalize_preferred_location_slug( legacy_get_suite_location_text( $suite_id ) );
+    }
+
+    /**
+     * Backfill suite_location_id for suites that only have a location text value.
+     */
+    function legacy_backfill_suite_location_ids() {
+        if ( get_option( 'legacy_suite_location_backfill_v1' ) ) {
+            return;
+        }
+
+        if ( ! function_exists( 'legacy_resolve_suite_location_id_from_text' ) || ! function_exists( 'legacy_get_suite_location_text' ) ) {
+            return;
+        }
+
+        $suites = get_posts(
+            array(
+                'post_type'      => 'luxury_suites',
+                'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+            )
+        );
+
+        foreach ( $suites as $suite_id ) {
+            if ( absint( get_post_meta( $suite_id, 'suite_location_id', true ) ) ) {
+                continue;
+            }
+
+            $resolved_id = legacy_resolve_suite_location_id_from_text( legacy_get_suite_location_text( $suite_id ) );
+
+            if ( $resolved_id ) {
+                update_post_meta( $suite_id, 'suite_location_id', $resolved_id );
+            }
+        }
+
+        update_option( 'legacy_suite_location_backfill_v1', 1, false );
+    }
+    add_action( 'init', 'legacy_backfill_suite_location_ids', 99 );
+     
     function legacy_add_luxury_suites_meta_boxes() {
         add_meta_box(
             'legacy_suite_location',
@@ -2197,13 +2720,22 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
             'default'
         );
 
+        // add_meta_box(
+        //     'legacy_suite_gallery',
+        //     __( 'Suite Gallery', 'custom-functions' ),
+        //     'legacy_render_suite_gallery_meta_box',
+        //     'luxury_suites',
+        //     'normal',
+        //     'high'
+        // );
+
         add_meta_box(
-            'legacy_suite_gallery',
-            __( 'Suite Gallery', 'custom-functions' ),
-            'legacy_render_suite_gallery_meta_box',
+            'legacy_suite_services',
+            __( 'Suite Services', 'custom-functions' ),
+            'legacy_render_suite_services_meta_box',
             'luxury_suites',
             'normal',
-            'high'
+            'default'
         );
     }
     add_action( 'add_meta_boxes', 'legacy_add_luxury_suites_meta_boxes' );
@@ -2256,110 +2788,112 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         <?php
     }
 
+
+
     /**
-     * Gallery UI (IDs are stored in post meta).
+     * Get saved suite services for frontend display.
+     *
+     * @param int $post_id Suite post ID.
+     * @return string[]
+     */
+    function legacy_get_suite_services( $post_id ) {
+        $services = get_post_meta( $post_id, 'suite_services', true );
+        if ( ! is_array( $services ) ) {
+            return array();
+        }
+
+        $services = array_map(
+            static function ( $service ) {
+                return sanitize_text_field( (string) $service );
+            },
+            $services
+        );
+
+        // return array_values( array_filter( $services, 'strlen' ) );
+         $services = array_values( array_filter( $services, 'strlen' ) );
+
+        return array_slice( $services, 0, 4 );
+    }
+
+    /**
+      * Normalize suite services for the editor (min 1 row, max 4).
+     *
+     * @param int $post_id Suite post ID.
+     * @return string[]
+     */
+    function legacy_get_suite_services_for_editor( $post_id ) {
+        $services = get_post_meta( $post_id, 'suite_services', true );
+        $services = is_array( $services ) ? $services : array();
+
+        $services = array_values(
+            array_map(
+                static function ( $service ) {
+                    return sanitize_text_field( (string) $service );
+                },
+                $services
+            )
+        );
+
+        if ( empty( $services ) ) {
+            $services[] = '';
+        }
+
+        return array_slice( $services, 0, 4 );
+    }
+
+    /**
+      * Suite services repeater (optional, up to 4 total).
      *
      * @param WP_Post $post Current suite post.
      */
-    function legacy_render_suite_gallery_meta_box( $post ) {
+    function legacy_render_suite_services_meta_box( $post ) {
         if ( ! $post instanceof WP_Post ) {
             return;
         }
 
         wp_nonce_field( 'legacy_save_suite_meta', 'legacy_suite_meta_nonce' );
 
-        $gallery_ids = get_post_meta( $post->ID, 'suite_gallery_ids', true );
-        $gallery_ids = is_array( $gallery_ids ) ? array_values( array_filter( array_map( 'absint', $gallery_ids ) ) ) : array();
+        $services = legacy_get_suite_services_for_editor( $post->ID );
         ?>
-        <div class="legacy-suite-gallery-wrap">
-            <p>
-                <button type="button" class="button button-primary" id="legacy-add-suite-gallery">
-                    <?php esc_html_e( 'Add Images / Videos', 'custom-functions' ); ?>
+        <div class="legacy-suite-services-wrap">
+            <div id="legacy-suite-services-list">
+                   <?php foreach ( $services as $service ) : ?>
+                    <?php $can_remove = count( $services ) > 1; ?>
+                    <div class="legacy-suite-service-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                        <input
+                            type="text"
+                            name="legacy_suite_services[]"
+                            value="<?php echo esc_attr( $service ); ?>"
+                            class="regular-text legacy-suite-service-input"
+                            placeholder="<?php esc_attr_e( 'Enter suite service', 'custom-functions' ); ?>"
+                          
+                            style="flex:1;"
+                        />
+                        <button
+                            type="button"
+                            class="button legacy-remove-suite-service"
+                            <?php echo $can_remove ? '' : 'disabled'; ?>
+                        >
+                            <?php esc_html_e( 'Remove', 'custom-functions' ); ?>
+                        </button>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <p style="margin:12px 0 8px;">
+                 <button type="button" class="button" id="legacy-add-suite-service" <?php disabled( count( $services ) >= 4 ); ?>>
+                    <?php esc_html_e( 'Add Service', 'custom-functions' ); ?>
                 </button>
             </p>
 
-            <ul
-                id="legacy-suite-gallery-list"
-                style="display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0;list-style:none;"
-            >
-                <?php if ( empty( $gallery_ids ) ) : ?>
-                    <li class="legacy-suite-gallery-empty" style="color:#666;">
-                        <?php esc_html_e( 'No media added yet.', 'custom-functions' ); ?>
-                    </li>
-                <?php else : ?>
-                    <?php foreach ( $gallery_ids as $attachment_id ) : ?>
-                        <?php
-                        $mime = get_post_mime_type( $attachment_id );
-                        $url  = wp_get_attachment_url( $attachment_id );
-                        if ( ! $url || 'attachment' !== get_post_type( $attachment_id ) ) {
-                            continue;
-                        }
-                        $is_video = is_string( $mime ) && 0 === strpos( $mime, 'video/' );
-                        $thumb    = wp_get_attachment_image_url( $attachment_id, 'thumbnail' );
-                        ?>
-                        <li
-                            class="legacy-suite-gallery-item"
-                            data-attachment-id="<?php echo esc_attr( $attachment_id ); ?>"
-                            style="position:relative;width:110px;height:110px;border:1px solid #ddd;background:#fff;cursor:move;display:flex;align-items:center;justify-content:center;overflow:hidden;"
-                        >
-                            <?php if ( $is_video ) : ?>
-                                <div style="position:relative;width:100%;height:100%;">
-                                    <?php if ( $thumb ) : ?>
-                                        <img src="<?php echo esc_url( $thumb ); ?>" alt="" style="width:100%;height:100%;object-fit:cover;" />
-                                    <?php else : ?>
-                                        <video src="<?php echo esc_url( $url ); ?>" style="width:100%;height:100%;object-fit:cover;" muted></video>
-                                    <?php endif; ?>
-                                    <span style="position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.7);color:#fff;padding:2px 6px;font-size:11px;border-radius:10px;">
-                                        <?php esc_html_e( 'Video', 'custom-functions' ); ?>
-                                    </span>
-                                </div>
-                            <?php else : ?>
-                                <img src="<?php echo esc_url( $thumb ? $thumb : $url ); ?>" alt="" style="width:100%;height:100%;object-fit:cover;" />
-                            <?php endif; ?>
-
-                            <button
-                                type="button"
-                                class="legacy-remove-suite-media"
-                                style="position:absolute;top:4px;right:4px;width:20px;height:20px;border:none;background:#d63638;color:#fff;border-radius:50%;line-height:20px;text-align:center;cursor:pointer;"
-                                aria-label="<?php esc_attr_e( 'Remove media', 'custom-functions' ); ?>"
-                            >×</button>
-                        </li>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </ul>
-
-            <input
-                type="hidden"
-                id="legacy_suite_gallery_ids"
-                name="legacy_suite_gallery_ids"
-                value="<?php echo esc_attr( wp_json_encode( $gallery_ids ) ); ?>"
-            />
-            <p class="description" style="margin-top:10px;">
-                <?php esc_html_e( 'Drag and drop to reorder. Images and videos are both supported.', 'custom-functions' ); ?>
+            <p class="description">
+                 <?php esc_html_e( 'Add up to 4 suite services (optional).', 'custom-functions' ); ?>
             </p>
         </div>
         <?php
     }
 
-    /**
-     * Load media modal + sortable only on luxury_suites editor.
-     *
-     * @param string $hook Current admin hook.
-     */
-    function legacy_enqueue_luxury_suites_admin_assets( $hook ) {
-        if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
-            return;
-        }
 
-        $screen = get_current_screen();
-        if ( ! $screen || 'luxury_suites' !== $screen->post_type ) {
-            return;
-        }
-
-        wp_enqueue_media();
-        wp_enqueue_script( 'jquery-ui-sortable' );
-    }
-    add_action( 'admin_enqueue_scripts', 'legacy_enqueue_luxury_suites_admin_assets', 20 );
 
     /**
      * Inline JS for Suite Gallery media picker + remove + reorder.
@@ -2484,7 +3018,81 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
     add_action( 'admin_footer', 'legacy_suite_gallery_admin_footer_js' );
 
     /**
-     * Save Suite Location + Suite Gallery meta.
+     * Inline JS for Suite Services add/remove rows.
+     */
+    function legacy_suite_services_admin_footer_js() {
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( ! $screen || 'luxury_suites' !== $screen->post_type ) {
+            return;
+        }
+        ?>
+        <script>
+        jQuery(function ($) {
+            var $list = $('#legacy-suite-services-list');
+            var $addButton = $('#legacy-add-suite-service');
+            var minRows = 1;
+            var maxRows = 4;
+
+            if (!$list.length || !$addButton.length) {
+                return;
+            }
+
+            function getRows() {
+                return $list.find('.legacy-suite-service-row');
+            }
+
+            function updateRowState() {
+                var rows = getRows();
+                var count = rows.length;
+
+                rows.each(function () {
+                    $(this).find('.legacy-remove-suite-service').prop('disabled', count <= minRows);
+                });
+
+                $addButton.prop('disabled', count >= maxRows);
+            }
+
+           function buildRow() {
+                return (
+                    '<div class="legacy-suite-service-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+                        '<input type="text" name="legacy_suite_services[]" value="" class="regular-text legacy-suite-service-input" ' +
+                           'placeholder="Enter suite service" style="flex:1;" />' +
+                        '<button type="button" class="button legacy-remove-suite-service">Remove</button>' +
+                    '</div>'
+                );
+            }
+
+            $addButton.on('click', function (e) {
+                e.preventDefault();
+
+                if (getRows().length >= maxRows) {
+                    return;
+                }
+
+                $list.append(buildRow());
+                updateRowState();
+            });
+
+            $list.on('click', '.legacy-remove-suite-service', function (e) {
+                e.preventDefault();
+
+                if (getRows().length <= minRows) {
+                    return;
+                }
+
+                $(this).closest('.legacy-suite-service-row').remove();
+                updateRowState();
+            });
+
+            updateRowState();
+        });
+        </script>
+        <?php
+    }
+    add_action( 'admin_footer', 'legacy_suite_services_admin_footer_js' );
+
+    /**
+     * Save Suite Location + Suite Services meta.
      *
      * @param int $post_id Current post ID.
      */
@@ -2510,31 +3118,38 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         $location_id = isset( $_POST['legacy_suite_location_id'] ) ? absint( wp_unslash( $_POST['legacy_suite_location_id'] ) ) : 0;
         if ( $location_id && 'our_locations' === get_post_type( $location_id ) ) {
             update_post_meta( $post_id, 'suite_location_id', $location_id );
-        } else {
-            delete_post_meta( $post_id, 'suite_location_id' );
+        } elseif ( isset( $_POST['legacy_suite_location_id'] ) ) {
+            if ( function_exists( 'legacy_resolve_suite_location_id_from_text' ) && function_exists( 'legacy_get_suite_location_text' ) ) {
+            $resolved_id = legacy_resolve_suite_location_id_from_text( legacy_get_suite_location_text( $post_id ) );
+            if ( $resolved_id ) {
+                update_post_meta( $post_id, 'suite_location_id', $resolved_id );
+            } else {
+                    delete_post_meta( $post_id, 'suite_location_id' );
+                }
+            } else {
+                delete_post_meta( $post_id, 'suite_location_id' );
+            }
         }
 
-        // Save gallery IDs (ordered).
-        if ( isset( $_POST['legacy_suite_gallery_ids'] ) ) {
-            $gallery_raw = json_decode( wp_unslash( $_POST['legacy_suite_gallery_ids'] ), true );
-            $gallery_raw = is_array( $gallery_raw ) ? $gallery_raw : array();
+        
 
-            $gallery_ids = array();
-            foreach ( $gallery_raw as $attachment_id ) {
-                $attachment_id = absint( $attachment_id );
-                if ( ! $attachment_id || 'attachment' !== get_post_type( $attachment_id ) ) {
-                    continue;
-                }
-                $mime = get_post_mime_type( $attachment_id );
-                if ( is_string( $mime ) && ( 0 === strpos( $mime, 'image/' ) || 0 === strpos( $mime, 'video/' ) ) ) {
-                    $gallery_ids[] = $attachment_id;
+        if ( isset( $_POST['legacy_suite_services'] ) && is_array( $_POST['legacy_suite_services'] ) ) {
+            $services = array();
+
+            foreach ( wp_unslash( $_POST['legacy_suite_services'] ) as $service ) {
+                $service = sanitize_text_field( $service );
+                if ( '' !== $service ) {
+                    $services[] = $service;
                 }
             }
 
-            if ( ! empty( $gallery_ids ) ) {
-                update_post_meta( $post_id, 'suite_gallery_ids', array_values( array_unique( $gallery_ids ) ) );
+            // $services = array_slice( $services, 0, 5 );
+              $services = array_slice( $services, 0, 4 );
+
+            if ( empty( $services ) ) {
+                delete_post_meta( $post_id, 'suite_services' );
             } else {
-                delete_post_meta( $post_id, 'suite_gallery_ids' );
+                update_post_meta( $post_id, 'suite_services', $services );
             }
         }
     }
@@ -2546,30 +3161,93 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
      * -----------------------------------------------------------------------------
      */
 
-    /**
-     * Get selected location post ID for a suite.
-     *
-     * @param int $suite_id Luxury suite post ID.
-     * @return int
-     */
-    function legacy_get_suite_location_id( $suite_id ) {
-        return absint( get_post_meta( $suite_id, 'suite_location_id', true ) );
-    }
+    // /**
+    //  * Get selected location post ID for a suite.
+    //  *
+    //  * @param int $suite_id Luxury suite post ID.
+    //  * @return int
+    //  */
+    // function legacy_get_suite_location_id( $suite_id ) {
+    //     $location_id = absint( get_post_meta( $suite_id, 'suite_location_id', true ) );
 
-    /**
-     * Get selected location object for a suite.
-     *
-     * @param int $suite_id Luxury suite post ID.
-     * @return WP_Post|null
-     */
-    function legacy_get_suite_location_post( $suite_id ) {
-        $location_id = legacy_get_suite_location_id( $suite_id );
-        if ( ! $location_id || 'our_locations' !== get_post_type( $location_id ) ) {
-            return null;
-        }
-        $location = get_post( $location_id );
-        return $location instanceof WP_Post ? $location : null;
-    }
+    //     if ( $location_id && 'our_locations' === get_post_type( $location_id ) ) {
+    //         return $location_id;
+    //     }
+
+    //     return legacy_resolve_suite_location_id_from_text( legacy_get_suite_location_text( $suite_id ) );
+    // }
+
+    // /**
+    //  * Get selected location object for a suite.
+    //  *
+    //  * @param int $suite_id Luxury suite post ID.
+    //  * @return WP_Post|null
+    //  */
+    // function legacy_get_suite_location_post( $suite_id ) {
+    //     $location_id = legacy_get_suite_location_id( $suite_id );
+    //     if ( ! $location_id || 'our_locations' !== get_post_type( $location_id ) ) {
+    //         return null;
+    //     }
+    //     $location = get_post( $location_id );
+    //     return $location instanceof WP_Post ? $location : null;
+    // }
+
+    // /**
+    //  * Map suite location meta to SignUp form preferred_location value (village|cooper).
+    //  *
+    //  * @param int $suite_id Luxury suite post ID.
+    //  * @return string Empty string when unknown.
+    //  */
+    // function legacy_get_suite_preferred_location_slug( $suite_id ) {
+    //     $location = legacy_get_suite_location_post( $suite_id );
+    //     if ( $location ) {
+    //         $slug = legacy_normalize_preferred_location_slug( $location->post_name );
+
+    //         if ( '' !== $slug ) {
+    //             return $slug;
+    //         }
+
+    //         $slug = legacy_normalize_preferred_location_slug( get_the_title( $location->ID ) );
+
+    //         if ( '' !== $slug ) {
+    //             return $slug;
+    //         }
+    //     }
+
+    //     return legacy_normalize_preferred_location_slug( legacy_get_suite_location_text( $suite_id ) );
+    // }
+
+    // /**
+    //  * Backfill suite_location_id for suites that only have a location text value.
+    //  */
+    // function legacy_backfill_suite_location_ids() {
+    //     if ( get_option( 'legacy_suite_location_backfill_v1' ) ) {
+    //         return;
+    //     }
+
+    //       $suites = get_posts(
+    //         array(
+    //             'post_type'      => 'luxury_suites',
+    //             'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+    //             'posts_per_page' => -1,
+    //             'fields'         => 'ids',
+    //         )
+    //     );
+
+    //   foreach ( $suites as $suite_id ) {
+    //         if ( absint( get_post_meta( $suite_id, 'suite_location_id', true ) ) ) {
+    //             continue;
+    //         }
+    //       $resolved_id = legacy_resolve_suite_location_id_from_text( legacy_get_suite_location_text( $suite_id ) );
+
+    //         if ( $resolved_id ) {
+    //             update_post_meta( $suite_id, 'suite_location_id', $resolved_id );
+    //         }
+    //     }
+
+    //     update_option( 'legacy_suite_location_backfill_v1', 1, false );
+    // }
+    // add_action( 'init', 'legacy_backfill_suite_location_ids', 30 );
 
     /**
      * Get ordered gallery attachment IDs for a suite.
@@ -2667,6 +3345,286 @@ function custom_functions_get_suite_before_overlay_image_html($attachment_id) {
         echo '</div>';
     }
 
+    /**
+     * Base capabilities for the Business Admin role (editor-level content access).
+     *
+     * @return array<string, bool>
+     */
+    function legacy_get_business_admin_capabilities() {
+        $editor = get_role( 'editor' );
 
+        if ( $editor && ! empty( $editor->capabilities ) ) {
+            return $editor->capabilities;
+        }
+
+        return array(
+            'read'                   => true,
+            'edit_posts'             => true,
+            'edit_pages'             => true,
+            'edit_published_posts'   => true,
+            'edit_published_pages'   => true,
+            'publish_posts'          => true,
+            'publish_pages'          => true,
+            'upload_files'           => true,
+            'delete_posts'           => true,
+            'delete_pages'           => true,
+            'delete_published_posts' => true,
+            'delete_published_pages' => true,
+            'edit_others_posts'      => true,
+            'edit_others_pages'      => true,
+            'delete_others_posts'    => true,
+            'delete_others_pages'    => true,
+            'manage_categories'      => true,
+            'moderate_comments'      => true,
+        );
+    }
+
+    /**
+     * Create or update the Business Admin role.
+     */
+    function legacy_ensure_business_admin_role() {
+        $caps = legacy_get_business_admin_capabilities();
+        $role = get_role( 'business_admin' );
+
+        if ( ! $role ) {
+            add_role( 'business_admin', __( 'Business Admin', 'custom-functions' ), $caps );
+            return;
+        }
+
+        foreach ( $caps as $cap => $grant ) {
+            if ( $grant ) {
+                $role->add_cap( $cap );
+            }
+        }
+    }
+    add_action( 'init', 'legacy_ensure_business_admin_role', 5 );
+
+    /**
+     * Beaver Builder user-access keys required for page + header/footer editing.
+     *
+     * @return string[]
+     */
+    function legacy_get_business_admin_beaver_builder_access_keys() {
+        return array(
+            'builder_access',
+            'unrestricted_editing',
+            'builder_admin',
+            'theme_builder_editing',
+        );
+    }
+
+    /**
+     * Ensure Business Admin is enabled in Beaver Builder user-access settings.
+     *
+     * @param array<string, array<string, bool>> $settings Saved Beaver Builder user-access settings.
+     * @return array<string, array<string, bool>>
+     */
+    function legacy_merge_business_admin_beaver_builder_user_access( $settings ) {
+        if ( ! get_role( 'business_admin' ) ) {
+            return is_array( $settings ) ? $settings : array();
+        }
+
+        if ( ! is_array( $settings ) ) {
+            $settings = array();
+        }
+
+        foreach ( legacy_get_business_admin_beaver_builder_access_keys() as $key ) {
+            if ( ! isset( $settings[ $key ] ) || ! is_array( $settings[ $key ] ) ) {
+                $settings[ $key ] = array();
+            }
+
+            $settings[ $key ]['business_admin'] = true;
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Always apply Business Admin Beaver Builder access at runtime.
+     *
+     * @param mixed $value Option value from the database.
+     * @return array<string, array<string, bool>>|mixed
+     */
+    function legacy_filter_business_admin_beaver_builder_user_access_option( $value ) {
+        if ( false === $value ) {
+            return legacy_merge_business_admin_beaver_builder_user_access( array() );
+        }
+
+        if ( is_array( $value ) ) {
+            return legacy_merge_business_admin_beaver_builder_user_access( $value );
+        }
+
+        return $value;
+    }
+    add_filter( 'pre_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+    add_filter( 'pre_site_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+
+    /**
+     * Persist Beaver Builder user-access settings for Business Admin in the database.
+     */
+    function legacy_grant_business_admin_beaver_builder_access() {
+        if ( ! class_exists( 'FLBuilderUserAccess' ) || ! class_exists( 'FLBuilderModel' ) ) {
+            return;
+        }
+
+        if ( ! get_role( 'business_admin' ) ) {
+            return;
+        }
+
+        remove_filter( 'pre_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+        remove_filter( 'pre_site_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+
+        $raw_settings = FLBuilderUserAccess::get_raw_settings();
+        $settings     = legacy_merge_business_admin_beaver_builder_user_access( $raw_settings );
+        $changed      = false;
+
+        foreach ( legacy_get_business_admin_beaver_builder_access_keys() as $key ) {
+            if ( empty( $raw_settings[ $key ]['business_admin'] ) ) {
+                $changed = true;
+                break;
+            }
+        }
+
+        if ( $changed ) {
+            FLBuilderModel::update_admin_settings_option( '_fl_builder_user_access', $settings, false, true );
+        }
+
+        add_filter( 'pre_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+        add_filter( 'pre_site_option__fl_builder_user_access', 'legacy_filter_business_admin_beaver_builder_user_access_option' );
+    }
+    add_action( 'after_setup_theme', 'legacy_grant_business_admin_beaver_builder_access', 20 );
+    add_action( 'init', 'legacy_grant_business_admin_beaver_builder_access', 20 );
+
+    /**
+     * Whether the current user has the Business Admin role.
+     *
+     * @return bool
+     */
+    function legacy_current_user_is_business_admin() {
+        $user = wp_get_current_user();
+        if ( ! $user || ! $user->exists() ) {
+            return false;
+        }
+
+        return in_array( 'business_admin', (array) $user->roles, true );
+    }
+
+    /**
+     * Admin menu slugs / URLs to hide for Business Admin users.
+     *
+     * @return string[]
+     */
+    function legacy_get_business_admin_hidden_admin_menus() {
+        return array(
+            'edit.php?post_type=our_team',
+            'edit.php?post_type=rmp_menu',
+            // 'edit.php?post_type=legacy_gallery',
+            'edit.php?post_type=page_content',
+            // 'tsvg-admin',
+            'featuredvideo',
+            'smush',
+            'ipanorama',
+            'postman',
+        );
+    }
+
+    /**
+     * Post types Business Admin must not access in wp-admin.
+     *
+     * @return string[]
+     */
+    function legacy_get_business_admin_hidden_post_types() {
+        return array(
+            'our_team',
+            'rmp_menu',
+            // 'legacy_gallery',
+            'page_content',
+        );
+    }
+
+    /**
+     * admin.php?page= values Business Admin must not access.
+     *
+     * @return string[]
+     */
+    function legacy_get_business_admin_hidden_admin_pages() {
+        return array(
+            // 'tsvg-admin',
+            // 'tsvg-builder',
+            // 'tsvg-pro',
+            // 'tsvg-add-ons',
+            'featuredvideo',
+            'smush',
+            'smush-bulk',
+            'smush-lazy-preload',
+            'smush-cdn',
+            'smush-next-gen',
+            'smush-integrations',
+            'smush-settings',
+            'ipanorama',
+            'postman',
+            'postman_email_log',
+        );
+    }
+
+    /**
+     * Hide selected wp-admin menu items for Business Admin role.
+     */
+    function legacy_hide_admin_menus_for_business_admin() {
+        if ( ! is_admin() || ! legacy_current_user_is_business_admin() ) {
+            return;
+        }
+
+        foreach ( legacy_get_business_admin_hidden_admin_menus() as $menu_slug ) {
+            remove_menu_page( $menu_slug );
+        }
+    }
+    add_action( 'admin_menu', 'legacy_hide_admin_menus_for_business_admin', 999 );
+
+    /**
+     * Block direct access to hidden admin screens for Business Admin.
+     */
+    function legacy_block_business_admin_restricted_admin_pages() {
+        if ( ! is_admin() || ! legacy_current_user_is_business_admin() ) {
+            return;
+        }
+
+        global $pagenow;
+
+        $post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+        $page      = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+
+        if ( in_array( $post_type, legacy_get_business_admin_hidden_post_types(), true ) ) {
+            legacy_deny_business_admin_admin_access();
+        }
+
+        if ( in_array( $page, legacy_get_business_admin_hidden_admin_pages(), true ) ) {
+            legacy_deny_business_admin_admin_access();
+        }
+
+        if ( in_array( $pagenow, array( 'post.php', 'post-new.php' ), true ) ) {
+            $editing_type = $post_type;
+
+            if ( ! $editing_type && ! empty( $_GET['post'] ) ) {
+                $editing_type = get_post_type( absint( $_GET['post'] ) );
+            }
+
+            if ( $editing_type && in_array( $editing_type, legacy_get_business_admin_hidden_post_types(), true ) ) {
+                legacy_deny_business_admin_admin_access();
+            }
+        }
+    }
+    add_action( 'admin_init', 'legacy_block_business_admin_restricted_admin_pages', 1 );
+
+    /**
+     * Deny wp-admin access for restricted Business Admin screens.
+     */
+    function legacy_deny_business_admin_admin_access() {
+        wp_die(
+            esc_html__( 'You do not have permission to access this page.', 'custom-functions' ),
+            esc_html__( 'Access denied', 'custom-functions' ),
+            array( 'response' => 403 )
+        );
+    }
 
 
