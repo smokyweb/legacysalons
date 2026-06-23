@@ -144,14 +144,22 @@ function legacy_cf7_recaptcha_error_scope_js() {
 	'use strict';
 
 	/**
-	 * On form invalid: if the API response contains `recaptcha_error`,
-	 * show it in .hostbox-recaptcha-error.
-	 * If reCAPTCHA is the ONLY error, also suppress the global output banner.
+	 * On form invalid: show recaptcha error under the widget.
+	 * Suppress the global banner when recaptcha is the only error.
+	 *
+	 * NOTE: In CF7 5.5+ `wpcf7submit` fires AFTER `wpcf7invalid`.
+	 * The clear logic in `wpcf7submit` must not wipe what we set here.
 	 */
 	document.addEventListener('wpcf7invalid', function (e) {
-		var form       = e.target;
-		var api        = e.detail && e.detail.apiResponse;
-		var errorDiv   = form.querySelector('.hostbox-recaptcha-error');
+		var form     = e.target;
+		var api      = e.detail && e.detail.apiResponse;
+		var errorDiv = form.querySelector('.hostbox-recaptcha-error');
+
+		// Always reset first so a stale message never lingers on re-submit
+		if (errorDiv) {
+			errorDiv.textContent = '';
+			errorDiv.style.display = 'none';
+		}
 
 		if (!api || !api.recaptcha_error) {
 			return;
@@ -163,7 +171,7 @@ function legacy_cf7_recaptcha_error_scope_js() {
 			errorDiv.style.display = 'block';
 		}
 
-		// If there are no other field errors, suppress the global response banner
+		// Suppress the global banner only when recaptcha is the sole failure
 		var otherErrors = Array.isArray(api.invalid_fields) ? api.invalid_fields.length : 0;
 		if (otherErrors === 0) {
 			var banner = form.querySelector('.wpcf7-response-output');
@@ -175,19 +183,29 @@ function legacy_cf7_recaptcha_error_scope_js() {
 	});
 
 	/**
-	 * On any submit: restore banner visibility (in case previous reCAPTCHA
-	 * error had hidden it) and clear the custom error div.
+	 * wpcf7submit fires AFTER wpcf7invalid in CF7 5.5+.
+	 * Only clear the custom error div and restore the banner when the
+	 * current response does NOT carry a recaptcha error — otherwise we
+	 * would immediately wipe the error that wpcf7invalid just displayed.
 	 */
 	document.addEventListener('wpcf7submit', function (e) {
-		var form     = e.target;
-		var errorDiv = form.querySelector('.hostbox-recaptcha-error');
-		var banner   = form.querySelector('.wpcf7-response-output');
+		var form   = e.target;
+		var api    = e.detail && e.detail.apiResponse;
+		var banner = form.querySelector('.wpcf7-response-output');
 
+		// This submit result contains our recaptcha error — leave the div alone.
+		if (api && api.recaptcha_error) {
+			return;
+		}
+
+		// Any other outcome (success, other field errors, spam…): clear the custom div
+		var errorDiv = form.querySelector('.hostbox-recaptcha-error');
 		if (errorDiv) {
 			errorDiv.textContent = '';
 			errorDiv.style.display = 'none';
 		}
 
+		// Restore global banner if we previously hid it
 		if (banner && banner.getAttribute('data-recaptcha-hidden') === '1') {
 			banner.style.visibility = '';
 			banner.removeAttribute('data-recaptcha-hidden');
