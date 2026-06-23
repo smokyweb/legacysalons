@@ -239,6 +239,40 @@
 	}
 
 	/* =================================================================
+	 * MODAL CLOSE — reset widget + clear error on every dismiss
+	 *
+	 * Both modals close by removing the 'is-open' class (confirmed from
+	 * signup-a-suite.js and custom.js source).  A MutationObserver on the
+	 * modal element's 'class' attribute catches every close path:
+	 * button, backdrop click, Escape key, and programmatic close.
+	 * ================================================================ */
+
+	/**
+	 * Watch a modal element and call resetFn whenever 'is-open' is removed.
+	 * Safe to call multiple times — uses a guard flag on the element.
+	 *
+	 * @param {Element}  modalEl   The modal root element to observe.
+	 * @param {Function} resetFn   Called with no arguments when modal closes.
+	 */
+	function observeModalClose( modalEl, resetFn ) {
+		if ( ! modalEl || modalEl._lasCloseObserved ) { return; }
+		modalEl._lasCloseObserved = true;
+
+		var wasOpen = modalEl.classList.contains( 'is-open' );
+
+		var observer = new MutationObserver( function () {
+			var isOpen = modalEl.classList.contains( 'is-open' );
+			if ( wasOpen && ! isOpen ) {
+				// Modal just closed — reset reCAPTCHA
+				resetFn();
+			}
+			wasOpen = isOpen;
+		} );
+
+		observer.observe( modalEl, { attributes: true, attributeFilter: [ 'class' ] } );
+	}
+
+	/* =================================================================
 	 * INITIALISE
 	 * Wait for grecaptcha.render to be available (API may load async),
 	 * then inject wraps + render widgets.
@@ -256,6 +290,27 @@
 			if ( ! modal ) { return; }
 			ensureWrapInModal( modal );
 			renderWidget( modal );
+		} );
+
+		// ---- Close observers ----
+
+		// signup-a-suite-modal: reset each .signup-a-suite-form inside it
+		var suiteModal = document.getElementById( 'signup-a-suite-modal' );
+		if ( suiteModal ) {
+			observeModalClose( suiteModal, function () {
+				suiteModal.querySelectorAll( '.signup-a-suite-form' ).forEach( function ( form ) {
+					resetWidget( form );
+				} );
+			} );
+		}
+
+		// personalInfoModal + suite-matching-personal-modal: reset widget in modal
+		[ 'personalInfoModal', 'suite-matching-personal-modal' ].forEach( function ( id ) {
+			var modal = document.getElementById( id );
+			if ( ! modal ) { return; }
+			observeModalClose( modal, function () {
+				resetWidget( modal );
+			} );
 		} );
 	}
 
