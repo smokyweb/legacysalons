@@ -163,6 +163,58 @@ jQuery(document).ready(function ($) {
         });
     }
     
+    function initFeaturedSuiteSwipers() {
+        if (typeof Swiper === 'undefined') {
+            return;
+        }
+
+        document.querySelectorAll('.suiteSwiper').forEach(function (el) {
+            if (el.swiper || el.dataset.suiteSwiperInit === '1') {
+                return;
+            }
+
+            el.dataset.suiteSwiperInit = '1';
+
+            new Swiper(el, {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                observer: true,
+                observeParents: true,
+                navigation: {
+                    nextEl: el.querySelector('.swiper-button-next'),
+                    prevEl: el.querySelector('.swiper-button-prev'),
+                    lockClass: 'suite-swiper-nav-lock',
+                },
+                breakpoints: {
+                    320: { slidesPerView: 1 },
+                    576: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                },
+            });
+        });
+    }
+
+    function refreshFeaturedSuiteSwipers() {
+        document.querySelectorAll('.suiteSwiper').forEach(function (el) {
+            if (el.swiper) {
+                el.swiper.update();
+            }
+        });
+    }
+
+    initFeaturedSuiteSwipers();
+
+    window.addEventListener('load', function () {
+        document.querySelectorAll('.suiteSwiper').forEach(function (el) {
+            if (!el.swiper) {
+                el.dataset.suiteSwiperInit = '';
+            }
+        });
+        initFeaturedSuiteSwipers();
+        refreshFeaturedSuiteSwipers();
+    });
+    
     
     function updateSuiteBtn(swiper) {
         let activeSlide = swiper.el.querySelector('.swiper-slide-active');
@@ -669,124 +721,543 @@ jQuery(document).ready(function ($) {
         );
     })();
 
-    function showError(inputName, message) {
-        var input = $('[name="' + inputName + '"]');
-        input.css('border', '1px solid red');
-        if (input.next('.error-msg').length === 0) {
-            input.after('<span class="error-msg"></span>');
+    function getMatchSuiteScope($trigger) {
+        if ($trigger && $trigger.length) {
+            var $scoped = $trigger.closest('#matchSuite, .fl-node-z86wiqbapmyl, #suite-matching-popup-root');
+            if ($scoped.length) {
+                return $scoped;
+            }
         }
-        
-        input.next('.error-msg').text(message);
+
+        var $fallback = $('#matchSuite, .fl-node-z86wiqbapmyl, #suite-matching-popup-root').first();
+        return $fallback.length ? $fallback : $(document);
     }
 
-    // Match btn click event
-    $('.btn-matching').on('click', function(e) {
+    function getNamedFieldValue(name, $scope) {
+        var $root = $scope && $scope.length ? $scope : $(document);
+        var $checked = $root.find('[name="' + name + '"]:checked');
+        if ($checked.length) {
+            return ($checked.val() || '').toString().trim();
+        }
+        var $field = $root.find('[name="' + name + '"]').first();
+        return ($field.val() || '').toString().trim();
+    }
+
+    function showFieldError(inputName, message, $scope) {
+        var $root = $scope && $scope.length ? $scope : $(document);
+        var $fields = $root.find('[name="' + inputName + '"]');
+        if (!$fields.length) {
+            return;
+        }
+
+        $fields.css('border', '1px solid red');
+
+        var $anchor = $fields.first();
+        if ($fields.first().is(':radio,:checkbox')) {
+            $anchor = $fields.closest('label').first();
+            if (!$anchor.length) {
+                $anchor = $fields.first().parent();
+            }
+        }
+
+        if ($anchor.next('.error-msg').length === 0) {
+            $anchor.after('<span class="error-msg"></span>');
+        }
+
+        $anchor.next('.error-msg').text(message);
+    }
+
+    function setupPersonalModalElement(modal, titleId) {
+        if (!modal || modal.dataset.personalModalInit === '1') {
+            return;
+        }
+
+        modal.dataset.personalModalInit = '1';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('inert', '');
+
+        if (titleId) {
+            modal.setAttribute('aria-labelledby', titleId);
+            var heading = modal.querySelector('h2');
+            if (heading && !heading.id) {
+                heading.id = titleId;
+            }
+        }
+    }
+
+    function getPersonalModalConfig($context) {
+        var $active = ($context && $context.length)
+            ? $context.closest('#suite-matching-personal-modal, #personalInfoModal')
+            : $();
+
+        if ($active.is('#suite-matching-personal-modal')) {
+            return {
+                modal: $active[0],
+                name: '#suite-match-name',
+                email: '#suite-match-email',
+                phone: '#suite-match-phone',
+                contact: 'suite_match_contact',
+                usesFooterModal: true
+            };
+        }
+
+        if ($active.is('#personalInfoModal')) {
+            return {
+                modal: $active[0],
+                name: '#name',
+                email: '#email',
+                phone: '#phone',
+                contact: 'contact',
+                usesFooterModal: false
+            };
+        }
+
+        var footerModal = document.getElementById('suite-matching-personal-modal');
+        if (footerModal && footerModal.classList.contains('is-open')) {
+            return {
+                modal: footerModal,
+                name: '#suite-match-name',
+                email: '#suite-match-email',
+                phone: '#suite-match-phone',
+                contact: 'suite_match_contact',
+                usesFooterModal: true
+            };
+        }
+
+        var legacyModal = document.getElementById('personalInfoModal');
+        if (legacyModal && legacyModal.classList.contains('is-open')) {
+            return {
+                modal: legacyModal,
+                name: '#name',
+                email: '#email',
+                phone: '#phone',
+                contact: 'contact',
+                usesFooterModal: false
+            };
+        }
+
+        if (footerModal) {
+            return {
+                modal: footerModal,
+                name: '#suite-match-name',
+                email: '#suite-match-email',
+                phone: '#suite-match-phone',
+                contact: 'suite_match_contact',
+                usesFooterModal: true
+            };
+        }
+
+        if (legacyModal) {
+            return {
+                modal: legacyModal,
+                name: '#name',
+                email: '#email',
+                phone: '#phone',
+                contact: 'contact',
+                usesFooterModal: false
+            };
+        }
+
+        return {
+            modal: null,
+            name: '#name',
+            email: '#email',
+            phone: '#phone',
+            contact: 'contact',
+            usesFooterModal: false
+        };
+    }
+
+    function initPersonalInfoModal() {
+        setupPersonalModalElement(
+            document.getElementById('suite-matching-personal-modal'),
+            'suite-match-personal-title'
+        );
+
+        var legacyModal = document.getElementById('personalInfoModal');
+        setupPersonalModalElement(legacyModal, 'personal-info-modal-title');
+
+        if (document.getElementById('suite-matching-personal-modal') && legacyModal) {
+            legacyModal.style.display = 'none';
+            legacyModal.setAttribute('aria-hidden', 'true');
+            legacyModal.setAttribute('inert', '');
+        }
+    }
+
+    function moveFocusOutOfElement(container, preferredTarget) {
+        if (!container) {
+            return;
+        }
+
+        var active = document.activeElement;
+        if (!active || !container.contains(active)) {
+            return;
+        }
+
+        if (preferredTarget && typeof preferredTarget.focus === 'function') {
+            preferredTarget.focus({ preventScroll: true });
+            return;
+        }
+
+        if (typeof active.blur === 'function') {
+            active.blur();
+        }
+    }
+
+    function ensureSignupSuiteModalClosed(focusTarget) {
+        var modal = document.getElementById('signup-a-suite-modal');
+        if (!modal || !modal.classList.contains('is-open')) {
+            document.body.classList.remove('loftloader-disable-scrolling', 'signup-a-suite-modal-open');
+            return;
+        }
+
+        if (window.legacySignupSuite && typeof window.legacySignupSuite.closeModal === 'function') {
+            window.legacySignupSuite.closeModal(modal, {
+                focusTarget: focusTarget || null,
+                restoreFocus: !focusTarget
+            });
+            return;
+        }
+
+        moveFocusOutOfElement(modal, focusTarget);
+        modal.classList.remove('is-open');
+        modal.setAttribute('inert', '');
+        document.body.classList.remove('loftloader-disable-scrolling', 'signup-a-suite-modal-open');
+
+        window.requestAnimationFrame(function () {
+            modal.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+    function closePersonalInfoModalElement(modal) {
+        if (!modal) {
+            return;
+        }
+
+        moveFocusOutOfElement(modal, document.querySelector('.btn-matching'));
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+        modal.setAttribute('inert', '');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function closePersonalInfoModal() {
+        closePersonalInfoModalElement(document.getElementById('personalInfoModal'));
+        closePersonalInfoModalElement(document.getElementById('suite-matching-personal-modal'));
+
+        if (window.legacySuiteMatchingPopup && typeof window.legacySuiteMatchingPopup.close === 'function') {
+            window.legacySuiteMatchingPopup.close();
+        }
+    }
+
+    function openPersonalInfoModal() {
+        var config = getPersonalModalConfig();
+        var modal = config.modal;
+        if (!modal) {
+            return;
+        }
+
+        initPersonalInfoModal();
+
+        var nameField = document.querySelector(config.name);
+        ensureSignupSuiteModalClosed(nameField || modal);
+
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        modal.removeAttribute('inert');
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.style.display = 'block';
+        modal.style.zIndex = '10000003';
+
+        window.requestAnimationFrame(function () {
+            if (nameField && typeof nameField.focus === 'function') {
+                try {
+                    nameField.focus({ preventScroll: true });
+                } catch (err) {
+                    nameField.focus();
+                }
+            }
+        });
+    }
+
+    function closeVideoModal() {
+        var $videoModal = $('#videoModal');
+        if (!$videoModal.length) {
+            return;
+        }
+
+        $videoModal.fadeOut();
+
+        var modalVideo = document.getElementById('modalVideo');
+        if (modalVideo) {
+            modalVideo.pause();
+            var source = modalVideo.querySelector('source');
+            if (source) {
+                source.removeAttribute('src');
+            }
+        }
+    }
+
+    // Find my Suite
+    $(document).on('click', '.btn-matching', function (e) {
         e.preventDefault();
 
-        var profession = $('[name="profession"]').val();
-        var location   = $('[name="location_preference"]').val();
-        var timeline   = $('[name="timeline"]').val();
-        var budget     = $('[name="budget_weekly"]').val();
+        var $scope = getMatchSuiteScope($(this));
+        var profession = getNamedFieldValue('profession', $scope);
+        var location = getNamedFieldValue('location_preference', $scope);
+        var timeline = getNamedFieldValue('timeline', $scope);
+        var budget = getNamedFieldValue('budget_weekly', $scope);
 
-        $('.error-msg').text('');
-        $('input').css('border', '');
+        $scope.find('.error-msg').text('');
+        $scope.find('input, select').css('border', '');
         var isValid = true;
 
         if (!profession) {
-            showError('profession', 'Please select your profession');
+            showFieldError('profession', 'Please select your profession', $scope);
             isValid = false;
         }
         if (!location) {
-            showError('location_preference', 'Please select your location');
+            showFieldError('location_preference', 'Please select your location', $scope);
             isValid = false;
         }
         if (!timeline) {
-            showError('timeline', 'Please select timeline');
+            showFieldError('timeline', 'Please select timeline', $scope);
             isValid = false;
         }
         if (!budget) {
-            showError('budget_weekly', 'Please select your budget');
+            showFieldError('budget_weekly', 'Please select your budget', $scope);
             isValid = false;
         }
-        if (!isValid) return;
-        $('#personalInfoModal').fadeIn();
+        if (!isValid) {
+            return;
+        }
+
+        openPersonalInfoModal();
     });
+
+    initPersonalInfoModal();
+
+    window.legacyFindSuite = {
+        openPersonalInfoModal: openPersonalInfoModal,
+        closePersonalInfoModal: closePersonalInfoModal
+    };
     
+    // US phone format (123) 456-7890 — popup, CF7 (stylists/contact), and other forms
+    function personalPhoneDigits(value) {
+        return String(value || '').replace(/\D/g, '').slice(0, 10);
+    }
+
+    function personalFormatUSPhone(digits) {
+        if (!digits) {
+            return '';
+        }
+        if (digits.length <= 3) {
+            return '(' + digits;
+        }
+        if (digits.length <= 6) {
+            return '(' + digits.slice(0, 3) + ') ' + digits.slice(3);
+        }
+        return '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+    }
+
+    function validateUSPhoneInput(input) {
+        if (!input) {
+            return true;
+        }
+        var digits = personalPhoneDigits(input.value);
+        if (!digits.length) {
+            input.setCustomValidity('Please enter your phone number');
+            return false;
+        }
+        if (digits.length !== 10) {
+            input.setCustomValidity('Enter valid 10 digit phone');
+            return false;
+        }
+        input.setCustomValidity('');
+        return true;
+    }
+
+    function bindUSPhoneField($input) {
+        if (!$input || !$input.length || $input.data('usPhoneBound') === 1) {
+            return;
+        }
+        $input.data('usPhoneBound', 1);
+
+        var placeholder = ($input.attr('placeholder') || '').toString().trim();
+        $input
+            .attr('maxlength', 14)
+            .attr('inputmode', 'numeric')
+            .attr('autocomplete', 'tel-national');
+
+        if (!placeholder || placeholder === 'Phone Number') {
+            $input.attr('placeholder', '(123) 456-7890');
+        }
+
+        $input.on('beforeinput', function (e) {
+            if (e.originalEvent && e.originalEvent.data && /\D/.test(e.originalEvent.data)) {
+                e.preventDefault();
+            }
+        });
+
+        $input.on('keydown', function (e) {
+            var allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+            if (allowed.indexOf(e.key) !== -1 || e.ctrlKey || e.metaKey) {
+                return;
+            }
+            if (!/^\d$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        $input.on('input', function () {
+            var digits = personalPhoneDigits($input.val());
+            var formatted = personalFormatUSPhone(digits);
+            if ($input.val() !== formatted) {
+                $input.val(formatted);
+            }
+            validateUSPhoneInput($input[0]);
+            $input.css('border', '');
+            $input.next('.error-msg').text('');
+        });
+
+        $input.on('blur', function () {
+            validateUSPhoneInput($input[0]);
+        });
+
+        $input.on('paste', function (e) {
+            e.preventDefault();
+            var pasted = (e.originalEvent && e.originalEvent.clipboardData)
+                ? e.originalEvent.clipboardData.getData('text')
+                : '';
+            var digits = personalPhoneDigits(pasted);
+            $input.val(personalFormatUSPhone(digits));
+            validateUSPhoneInput($input[0]);
+        });
+    }
+
+    function initAllUSPhoneFields($root) {
+        ($root || $(document)).find('input[name="phone"]').each(function () {
+            bindUSPhoneField($(this));
+        });
+    }
+
+    initAllUSPhoneFields();
+
+    document.addEventListener('wpcf7domready', function (event) {
+        if (event && event.target) {
+            initAllUSPhoneFields($(event.target));
+        } else {
+            initAllUSPhoneFields();
+        }
+    });
+
+    $(document).on('submit', 'form.wpcf7-form', function () {
+        var $phone = $(this).find('input[name="phone"]');
+        if (!$phone.length) {
+            return;
+        }
+        var digits = personalPhoneDigits($phone.val());
+        if (digits) {
+            $phone.val(personalFormatUSPhone(digits));
+        }
+        validateUSPhoneInput($phone[0]);
+    });
+
+    bindUSPhoneField($('#phone'));
+    bindUSPhoneField($('#suite-match-phone'));
+
     // pop-up suite match submit event
-    $('.submit-btn').on('click', function(e) {
+    $(document).on('click', '.submit-btn, .suite-matching-submit-btn', function(e) {
         e.preventDefault();
+        var $submitBtn = $(this);
+        var config = getPersonalModalConfig($submitBtn);
+        var $modalScope = config.modal ? $(config.modal) : $submitBtn.closest('#suite-matching-personal-modal, #personalInfoModal');
         var isValid = true;
 
-        $('.error-msg').text('');
-        $('input').css('border', '');
+        $modalScope.find('.error-msg').text('');
+        $modalScope.find(config.name + ', ' + config.email + ', ' + config.phone).css('border', '');
 
-        function showError(input, message) {
-            input.css('border', '1px solid red');
-            if (input.next('.error-msg').length === 0) {
-                input.after('<span class="error-msg"></span>');
+        function showError($input, message) {
+            $input.css('border', '1px solid red');
+            if ($input.next('.error-msg').length === 0) {
+                $input.after('<span class="error-msg"></span>');
             }
 
-            input.next('.error-msg').text(message);
+            $input.next('.error-msg').text(message);
             isValid = false;
         }
 
-        var name  = $('#name');
-        var email = $('#email');
-        var phone = $('#phone');
-        var contact = $('input[name="contact"]:checked');
-        console.log(phone);
+        var $name  = $modalScope.find(config.name);
+        var $email = $modalScope.find(config.email);
+        var $phone = $modalScope.find(config.phone);
+        var $contact = $modalScope.find('input[name="' + config.contact + '"]:checked');
 
-        // Validation
-        if (!name.val()) {
-            showError(name, 'Please enter your name');
+        if (!$name.val()) {
+            showError($name, 'Please enter your name');
         }
 
-        if (!email.val()) {
-            showError(email, 'Please enter your email');
+        if (!$email.val()) {
+            showError($email, 'Please enter your email');
         } else {
             var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(email.val())) {
-                showError(email, 'Please enter valid email');
+            if (!emailPattern.test($email.val())) {
+                showError($email, 'Please enter valid email');
             }
         }
 
-         if (!phone.val()) {
-            showError(phone, 'Please enter your phone number');
-        } else {
-            var phonePattern = /^[0-9]{10}$/;
-            if (!phonePattern.test(phone.val())) {
-                showError(phone, 'Enter valid 10 digit phone');
-            }
+        var phoneDigitsVal = personalPhoneDigits($phone.val());
+        if (phoneDigitsVal) {
+            $phone.val(personalFormatUSPhone(phoneDigitsVal));
         }
 
-        if (contact.length === 0) {
-            $('.contact-error').remove();
-            $('.labelWrap').append('<span class="error-msg contact-error">Please select contact method</span>');
+        if (!phoneDigitsVal) {
+            showError($phone, 'Please enter your phone number');
+        } else if (phoneDigitsVal.length !== 10) {
+            showError($phone, 'Enter valid 10 digit phone');
+        }
+
+        if ($contact.length === 0) {
+            $modalScope.find('.contact-error').remove();
+            $modalScope.find('.labelWrap').append('<span class="error-msg contact-error">Please select contact method</span>');
             isValid = false;
         } else {
-            $('.contact-error').remove();
+            $modalScope.find('.contact-error').remove();
         }
 
-        if (!isValid) return;
+        if (!isValid) {
+            return;
+        }
 
+        var ajaxPostUrl = (typeof customAjax !== 'undefined' && customAjax.ajax_url)
+            ? customAjax.ajax_url
+            : (typeof ajaxurl !== 'undefined' ? ajaxurl : '');
+
+        if (!ajaxPostUrl) {
+            return;
+        }
 
         $.ajax({
-            url: ajaxurl,
-            type: "POST",
+            url: ajaxPostUrl,
+            type: 'POST',
             data: {
-                action: "match_salon_suites",
-                profession: $('[name="profession"]').val(),
-                location: $('[name="location_preference"]').val(),
-                timeline: $('[name="timeline"]').val(),
-                budget: $('[name="budget_weekly"]').val(),
-                name: name.val(),
-                email: email.val(),
-                phone: phone.val(),
-                contact_method: contact.val()
+                action: 'match_salon_suites',
+                profession: getNamedFieldValue('profession', getMatchSuiteScope()),
+                location: getNamedFieldValue('location_preference', getMatchSuiteScope()),
+                timeline: getNamedFieldValue('timeline', getMatchSuiteScope()),
+                budget: getNamedFieldValue('budget_weekly', getMatchSuiteScope()),
+                name: $name.val(),
+                email: $email.val(),
+                phone: phoneDigitsVal,
+                contact_method: $contact.val()
             },
             success: function(response) {
                 if(response.success){
-                    $('#personalInfoModal').fadeOut();
+                    closePersonalInfoModal();
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -794,7 +1265,7 @@ jQuery(document).ready(function ($) {
                         confirmButtonText: 'OK'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = '/'; // redirect to home
+                            window.location.href = '/';
                         }
                     });
                 }
@@ -803,8 +1274,6 @@ jQuery(document).ready(function ($) {
                 console.log("Error:", xhr.responseText);
             }
         });
-
-
     });
 
 
@@ -815,45 +1284,44 @@ jQuery(document).ready(function ($) {
     });
 
     // Close modal
-    $('.close-modal').on('click', function() {
-        $('#personalInfoModal').fadeOut();
+    $(document).on('click', '.close-modal, [data-suite-matching-personal-close]', function() {
+        closePersonalInfoModal();
     });
 
     // Close when clicking outside
-    $(window).on('click', function(e) {
-        if ($(e.target).is('#personalInfoModal')) {
-            $('#personalInfoModal').fadeOut();
+    $(document).on('click', '#personalInfoModal, #suite-matching-personal-modal', function(e) {
+        if ($(e.target).is('#personalInfoModal') || $(e.target).is('#suite-matching-personal-modal')) {
+            closePersonalInfoModal();
         }
     });
 
-    // Other field for suite  matching
-    const professionSelect = document.getElementById("cw-profession");
-    const otherField = document.getElementById("cw-profession-other");
+    // Other field for suite matching (wizard page only)
+    var professionSelect = document.getElementById('cw-profession');
+    var otherField = document.getElementById('cw-profession-other');
 
-    professionSelect.addEventListener("change", function () {
-        if (this.value === "Other") {
-            otherField.style.display = "block";
-            otherField.setAttribute("required", "required");
-        } else {
-            otherField.style.display = "none";
-            otherField.removeAttribute("required");
-            otherField.value = "";
+    if (professionSelect && otherField) {
+        professionSelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                otherField.style.display = 'block';
+                otherField.setAttribute('required', 'required');
+            } else {
+                otherField.style.display = 'none';
+                otherField.removeAttribute('required');
+                otherField.value = '';
+            }
+        });
+    }
+
+    $(document).on('click', '.close-video', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeVideoModal();
+    });
+
+    $(document).on('click', '#videoModal', function (e) {
+        if ($(e.target).is('#videoModal')) {
+            closeVideoModal();
         }
-    });
-    
-    // Featured Suite Video Play
-    $('.video-card').on('click', function(){
-        var videoUrl = $(this).data('video');
-
-        $('#modalVideo source').attr('src', videoUrl);
-        $('#modalVideo')[0].load();
-
-        $('#videoModal').fadeIn();
-    });
-
-    $('.close-video').on('click', function(){
-        $('#videoModal').fadeOut();
-        $('#modalVideo')[0].pause();
     });
     
     // Stylist Gallery

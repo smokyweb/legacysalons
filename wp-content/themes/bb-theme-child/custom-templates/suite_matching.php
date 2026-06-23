@@ -34,7 +34,7 @@ $nonce       = wp_create_nonce( 'cw_suite_match_submit' );
 			<!--<input type="hidden" name="customer_phone" value="<?php //echo esc_attr( $qs_contact_phone ); ?>" />-->
 
 			<div class="cw-step cw-step-1" data-step="1">
-				<h3><?php esc_html_e( 'Step 1 — Your Profession', 'custom-widget' ); ?></h3>
+				<h3><?php esc_html_e( 'Step 1 — Profession/Services', 'custom-widget' ); ?></h3>
 				<p><?php esc_html_e( 'What best describes you?', 'custom-widget' ); ?></p>
 
 				<div class="cw-options">

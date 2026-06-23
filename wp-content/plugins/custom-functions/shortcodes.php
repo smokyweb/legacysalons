@@ -98,7 +98,7 @@ function featured_salon_suites($atts) {
     }
 
     $total_posts = count($posts);
-    $use_slider = $total_posts > 5;
+    $use_slider = $total_posts >= 5;
 
     ob_start();
     ?>
@@ -122,11 +122,17 @@ function featured_salon_suites($atts) {
                     $beforeImageId = absint(get_post_meta($post->ID, 'before_image_thumbnail', true));
                     $price = get_post_meta($post->ID, 'price', true);
                     $size = get_post_meta($post->ID, 'size', true);
-                    $amenities = get_post_meta($post->ID, 'amenities', true);
-                    $amenities = maybe_unserialize($amenities);
-                    $tourLink = get_post_meta($post->ID, 'tour_link', true);
+                    $suite_services = function_exists('legacy_get_suite_services')
+                        ? legacy_get_suite_services($post->ID)
+                        : array();
                     $suiteNumber = trim((string) get_post_meta($post->ID, 'suite_number', true));
                     $suiteNumberAttr = esc_attr($suiteNumber);
+                    $suiteLocationSlug = function_exists('legacy_get_suite_preferred_location_slug')
+                        ? legacy_get_suite_preferred_location_slug($post->ID)
+                        : '';
+                    $suiteLocationAttr = esc_attr($suiteLocationSlug);
+                    $suiteTriggerDataAttrs = ' data-signup-discount="" data-suite-no="' . $suiteNumberAttr . '" data-suite-location="' . $suiteLocationAttr . '"';
+                    $isAvailable = ( '1' === $availability );
 
                     if (!empty($suiteVideoId) && is_numeric($suiteVideoId)) {
                         $suiteVideoUrl = wp_get_attachment_url($suiteVideoId);
@@ -137,27 +143,32 @@ function featured_salon_suites($atts) {
 
                 <div class="<?php echo $use_slider ? 'swiper-slide' : 'col-md-12 col-lg-2 col-sm-6'; ?>">
 
-                    <div class="card service-card">
+                    <div class="card service-card" data-suite-no="<?php echo $suiteNumberAttr; ?>" data-suite-location="<?php echo $suiteLocationAttr; ?>">
 
-                        <?php if ( '1' === $availability ) : ?>
-                            <div class="tag"><?php esc_html_e( 'Available', 'custom-widget' ); ?></div>
+                        <?php if ( $isAvailable ) : ?>
+                            <div
+                                class="tag available-tag featured-suite-trigger"
+                                role="button"
+                                tabindex="0"
+                                <?php echo $suiteTriggerDataAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            ><?php esc_html_e( 'Available', 'custom-widget' ); ?></div>
                         <?php endif; ?>
 
                         <?php if ($hasSuiteMedia) : ?>
                             <?php
-                            $suite_image_wrap_tag = ( '1' === $availability )
-                                ? 'a'
-                                : 'div';
-                            $suite_image_wrap_attrs = ( '1' === $availability )
-                                ? ' href="#signup-a-suite-modal" class="suite-image-wrap suite-image-wrap--signup-link js-open-signup-a-suite-modal featured-suite-trigger" data-signup-discount="" data-suite-no="' . $suiteNumberAttr . '"'
-                                : ' class="suite-image-wrap" data-suite-no="' . $suiteNumberAttr . '"';
+                            $suite_image_wrap_class = 'suite-image-wrap suite-image-area';
+                            if ( $isAvailable ) {
+                                $suite_image_wrap_class .= ' featured-suite-trigger';
+                            }
                             ?>
-                            <<?php echo $suite_image_wrap_tag . $suite_image_wrap_attrs; ?>>
+                            <div class="<?php echo esc_attr( $suite_image_wrap_class ); ?>"<?php echo $isAvailable ? $suiteTriggerDataAttrs : ' data-suite-no="' . $suiteNumberAttr . '" data-suite-location="' . $suiteLocationAttr . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
                                 <?php if (!empty($suiteVideoUrl)) : ?>
 
                                     <div class="video-card" data-video="<?php echo esc_url($suiteVideoUrl); ?>">
                                         <div class="video-thumbnail" style="background-image: url('<?php echo esc_url($thumbnail); ?>');">
-                                            <div class="play-button">▶</div>
+                                            <button type="button" class="play-button js-suite-video-play" aria-label="<?php esc_attr_e( 'Play video', 'custom-widget' ); ?>">
+                                                <span class="play-button__icon" aria-hidden="true"></span>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -177,38 +188,43 @@ function featured_salon_suites($atts) {
                                         <?php echo $suite_before_overlay_html; ?>
                                     </div>
                                 <?php endif; ?>
-                            </<?php echo $suite_image_wrap_tag; ?>>
+                            </div>
                         <?php endif; ?>
 
                         <div class="card-body">
-                            <h5 class="card-title">
+                            <div>
+                                 <h5 class="card-title">
                                 <?php echo esc_html($post->post_title); ?>
-                                <span>
-                                    <?php echo !empty($price) ? '$'.$price.'/month' : 'N/A'; ?>
-                                </span>
                             </h5>
 
                             <ul>
+                                <?php
+                                if(!empty($size)){
+                                    
+                                ?>
                                 <li>
-                                    <img src="/wp-content/uploads/2026/04/green.png" />
-                                    <?php echo !empty($size) ? 'Approx. '.$size.' sq ft' : 'N/A'; ?>
+                                    <img src="/wp-content/uploads/2026/04/green.png" alt="tick" />
+                                    <?php echo !empty($size) ? 'Approx. '.$size.' sq ft' : ''; ?>
                                 </li>
+                                <?php }
+                                ?>
 
-                                <?php if (!empty($amenities) && is_array($amenities)) : ?>
-                                    <?php foreach ($amenities as $data) : ?>
+                                <?php if (!empty($suite_services)) : ?>
+                                    <?php foreach ($suite_services as $service) : ?>
                                         <li>
-                                            <img src="/wp-content/uploads/2026/04/green.png" />
-                                            <?php echo esc_html($data); ?>
+                                            <img src="/wp-content/uploads/2026/04/green.png" alt="tick" />
+                                            <?php echo esc_html($service); ?>
                                         </li>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </ul>
+                            </div>
+                           
 
                            <a
                                 href="#signup-a-suite-modal"
-                                class="view-details js-open-signup-a-suite-modal featured-suite-trigger"
-                                data-signup-discount=""
-                                data-suite-no="<?php echo $suiteNumberAttr; ?>"
+                                class="view-details learn-more featured-suite-trigger"
+                                <?php echo $suiteTriggerDataAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                             >
                                 <?php esc_html_e( 'Learn More', 'custom-widget' ); ?>
                             </a>
@@ -223,8 +239,8 @@ function featured_salon_suites($atts) {
         <?php if ($use_slider): ?>
             </div>
 
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev slider-prev suite-slider-prev" aria-label="<?php esc_attr_e( 'Previous', 'custom-widget' ); ?>"></div>
+            <div class="swiper-button-next slider-next suite-slider-next" aria-label="<?php esc_attr_e( 'Next', 'custom-widget' ); ?>"></div>
             <!--<div class="swiper-pagination"></div>-->
 
         </div>
@@ -253,8 +269,8 @@ function featured_salon_suites($atts) {
             slidesPerView: 5,
             spaceBetween: 20,
             navigation: {
-                nextEl: ".swiper-button-next",
-                prevEl: ".swiper-button-prev",
+                nextEl: ".suiteSwiper .swiper-button-next",
+                prevEl: ".suiteSwiper .swiper-button-prev",
             },
             pagination: {
                 el: ".swiper-pagination",
@@ -309,7 +325,7 @@ function suites_rentals_shortcode($atts) {
     }
 
     $total_posts = count($posts);
-    $use_slider = $total_posts > 5;
+    $use_slider = $total_posts >= 5;
 
     ob_start();
     ?>
@@ -333,9 +349,17 @@ function suites_rentals_shortcode($atts) {
                     $beforeImageId = absint(get_post_meta($post->ID, 'before_image_thumbnail', true));
                     $price = get_post_meta($post->ID, 'price', true);
                     $size = get_post_meta($post->ID, 'size', true);
-                    $amenities = get_post_meta($post->ID, 'amenities', true);
-                    $amenities = maybe_unserialize($amenities);
-                    $tourLink = get_post_meta($post->ID, 'tour_link', true);
+                    $suite_services = function_exists('legacy_get_suite_services')
+                        ? legacy_get_suite_services($post->ID)
+                        : array();
+                    $suiteNumber = trim((string) get_post_meta($post->ID, 'suite_number', true));
+                    $suiteNumberAttr = esc_attr($suiteNumber);
+                    $suiteLocationSlug = function_exists('legacy_get_suite_preferred_location_slug')
+                        ? legacy_get_suite_preferred_location_slug($post->ID)
+                        : '';
+                    $suiteLocationAttr = esc_attr($suiteLocationSlug);
+                    $suiteTriggerDataAttrs = ' data-signup-discount="" data-suite-no="' . $suiteNumberAttr . '" data-suite-location="' . $suiteLocationAttr . '"';
+                    $isAvailable = ( '1' === $availability );
 
                     if (!empty($suiteVideoId) && is_numeric($suiteVideoId)) {
                         $suiteVideoUrl = wp_get_attachment_url($suiteVideoId);
@@ -346,19 +370,32 @@ function suites_rentals_shortcode($atts) {
 
                 <div class="<?php echo $use_slider ? 'swiper-slide' : 'col-md-12 col-lg-2 col-sm-6'; ?>">
 
-                    <div class="card service-card">
+                    <div class="card service-card" data-suite-no="<?php echo $suiteNumberAttr; ?>" data-suite-location="<?php echo $suiteLocationAttr; ?>">
 
-                        <?php if($availability === '1'): ?>
-                            <div class="tag">Available</div>
+                        <?php if ( $isAvailable ) : ?>
+                            <div
+                                class="tag available-tag featured-suite-trigger"
+                                role="button"
+                                tabindex="0"
+                                <?php echo $suiteTriggerDataAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            ><?php esc_html_e( 'Available', 'custom-widget' ); ?></div>
                         <?php endif; ?>
 
                         <?php if ($hasSuiteMedia) : ?>
-                            <div class="suite-image-wrap">
+                            <?php
+                            $suite_image_wrap_class = 'suite-image-wrap suite-image-area';
+                            if ( $isAvailable ) {
+                                $suite_image_wrap_class .= ' featured-suite-trigger';
+                            }
+                            ?>
+                            <div class="<?php echo esc_attr( $suite_image_wrap_class ); ?>"<?php echo $isAvailable ? $suiteTriggerDataAttrs : ' data-suite-no="' . $suiteNumberAttr . '" data-suite-location="' . $suiteLocationAttr . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
                                 <?php if (!empty($suiteVideoUrl)) : ?>
 
                                     <div class="video-card" data-video="<?php echo esc_url($suiteVideoUrl); ?>">
                                         <div class="video-thumbnail" style="background-image: url('<?php echo esc_url($thumbnail); ?>');">
-                                            <div class="play-button">▶</div>
+                                            <button type="button" class="play-button js-suite-video-play" aria-label="<?php esc_attr_e( 'Play video', 'custom-widget' ); ?>">
+                                                <span class="play-button__icon" aria-hidden="true"></span>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -382,30 +419,42 @@ function suites_rentals_shortcode($atts) {
                         <?php endif; ?>
 
                         <div class="card-body">
-                            <h5 class="card-title">
+                            <div>
+                                 <h5 class="card-title">
                                 <?php echo esc_html($post->post_title); ?>
-                                <span>
-                                    <?php echo !empty($price) ? '$'.$price.'/month' : 'N/A'; ?>
-                                </span>
                             </h5>
 
                             <ul>
+                                <?php
+                                if(!empty($size)){
+                                    
+                                ?>
                                 <li>
                                     <img src="/wp-content/uploads/2026/04/green.png" />
-                                    <?php echo !empty($size) ? 'Approx. '.$size.' sq ft' : 'N/A'; ?>
+                                    <?php echo !empty($size) ? 'Approx. '.$size.' sq ft' : ''; ?>
                                 </li>
+                                <?php }
+                                ?>
 
-                                <?php if (!empty($amenities) && is_array($amenities)) : ?>
-                                    <?php foreach ($amenities as $data) : ?>
+                                <?php if (!empty($suite_services)) : ?>
+                                    <?php foreach ($suite_services as $service) : ?>
                                         <li>
                                             <img src="/wp-content/uploads/2026/04/green.png" />
-                                            <?php echo esc_html($data); ?>
+                                            <?php echo esc_html($service); ?>
                                         </li>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </ul>
+                            </div>
+                           
 
-                            <a href="<?php echo (!empty($tourLink)) ? htmlspecialchars($tourLink) : 'javascript:void(0)'; ?>" class="view-details">Learn More</a>
+                           <a
+                                href="#signup-a-suite-modal"
+                                class="view-details learn-more featured-suite-trigger"
+                                <?php echo $suiteTriggerDataAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            >
+                                <?php esc_html_e( 'Learn More', 'custom-widget' ); ?>
+                            </a>
                         </div>
 
                     </div>
@@ -417,8 +466,8 @@ function suites_rentals_shortcode($atts) {
         <?php if ($use_slider): ?>
             </div>
 
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev slider-prev suite-slider-prev" aria-label="<?php esc_attr_e( 'Previous', 'custom-widget' ); ?>"></div>
+            <div class="swiper-button-next slider-next suite-slider-next" aria-label="<?php esc_attr_e( 'Next', 'custom-widget' ); ?>"></div>
             <!--<div class="swiper-pagination"></div>-->
 
         </div>
@@ -445,8 +494,8 @@ function suites_rentals_shortcode($atts) {
             slidesPerView: 5,
             spaceBetween: 20,
             navigation: {
-                nextEl: ".swiper-button-next",
-                prevEl: ".swiper-button-prev",
+                nextEl: ".suiteSwiper .swiper-button-next",
+                prevEl: ".suiteSwiper .swiper-button-prev",
             },
             pagination: {
                 el: ".swiper-pagination",
@@ -481,6 +530,8 @@ function meet_stylists_shortcode() {
         'post_type'      => 'stylist', 
         'posts_per_page' => 5,
         'paged'          => $paged,
+        'orderby'        => 'title',
+        'order'          => 'ASC',
     );
     
     $query = new WP_Query($args);
@@ -559,6 +610,10 @@ function meet_stylists_shortcode() {
     if (!empty($tax_query)) {
         $tax_query['relation'] = 'AND';
         $args['tax_query'] = $tax_query;
+    }
+    
+    if ( function_exists( 'legacy_append_stylist_listing_visibility_meta_query' ) ) {
+        legacy_append_stylist_listing_visibility_meta_query( $args );
     }
     
     // Fix meta_query relation
@@ -785,6 +840,10 @@ function meet_stylists_home_shortcode() {
                 )
             );
         }
+    }
+    
+    if ( function_exists( 'legacy_append_stylist_listing_visibility_meta_query' ) ) {
+        legacy_append_stylist_listing_visibility_meta_query( $args );
     }
 
     $query = new WP_Query($args);
@@ -1378,9 +1437,9 @@ function our_locations_shortcode(){
     ?>
     <style>
     .locations-wrapper{
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:30px;
+        display:flex;
+        justify-content: center;
+        gap: 30px;
     }
     </style>
     <?php

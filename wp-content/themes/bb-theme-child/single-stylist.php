@@ -86,25 +86,25 @@ if ($contact && preg_match('/^\d{10}$/', $contact)) {
                 <div class="mb-3 text-warning">★★★★★ <span class="text-muted small">(4.9 | 157 reviews)</span></div>
                 <ul class="list-unstyled mb-4">
                     
-                    <li><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/pin.png" /> <?php if(!empty($city && $state)){echo $city. ' - ' .$state; }else{ echo 'NA';} ?></li>
-                    <li><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/badge.png" /> <?php if(!empty($experience)){ echo $experience; ?>+ years of experience <?php }else{ echo 'NA'; } ?></li>
+                    <li><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/pin.png" /> <?php if(!empty($city && $state)){echo $city. ' - ' .$state; }else{ echo 'NA';} ?></li>
+                    <li><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/badge.png" /> <?php if(!empty($experience)){ echo $experience; ?>+ years of experience <?php }else{ echo 'NA'; } ?></li>
                 </ul>
                 <strong>Call: <?php echo $formatted_contact; ?></strong>
                 <div class="social">
                     <?php
                     if(!empty($instagramUrl)){
                         ?>
-                        <a href="<?php echo $instagramUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/instagram.png" /></a>
+                        <a href="<?php echo $instagramUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/instagram.png" /></a>
                         <?php
                     }
                     if(!empty($facebookUrl)){
                         ?>
-                        <a href="<?php echo $facebookUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/facebook.png" /></a>
+                        <a href="<?php echo $facebookUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/facebook.png" /></a>
                         <?php
                     }
                     if(!empty($tikTokUrl)){
                         ?>
-                        <a href="<?php echo $tikTokUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/music.png" /></a>
+                        <a href="<?php echo $tikTokUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/music.png" /></a>
                         <?php
                     }
                     ?>
@@ -215,8 +215,8 @@ if ($contact && preg_match('/^\d{10}$/', $contact)) {
                 <div class="col-md-6">
                     <h5 class="fw-bold">Legacy Salons - Central Arlington</h5>
                     <p class="mb-4">Suite: <?php if(!empty($suite)){echo $suite; }else{ echo 'NA'; } ?></p>
-                    <p class="mb-4 d-flex align-items-center gap-4"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/pin.png" /> <span><?php if(!empty($street && $city && $state)){echo $street; ?><br><?php echo $city .', '.$state; }else{ echo 'NA'; } ?></span></p>
-                    <p class="mb-4 d-flex align-items-center gap-4"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/car.png" /> Free parking available at front of building</p>
+                    <p class="mb-4 d-flex align-items-center gap-4"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/pin.png" /> <span><?php if(!empty($street && $city && $state)){echo $street; ?><br><?php echo $city .', '.$state; }else{ echo 'NA'; } ?></span></p>
+                    <p class="mb-4 d-flex align-items-center gap-4"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/car.png" /> Free parking available at front of building</p>
                     <!--<button class="btn btn-dark-custom btn-sm" onclick="getDirections()">Get Directions</button>-->
                     <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo $address; ?>" 
                        target="_blank" 

@@ -60,8 +60,8 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                 </div>
             
                 <div class="text-start">
-                    <h1 class="text-4xl font-bold text-white mt-4 pt-1"><?php echo !empty($postTitle) ? $postTitle : 'N/A'; ?></h1>
-                    <p class="text-slate-300 text-lg uppercase tracking-widest mt-2"><?php echo !empty($position) ? $position : 'N/A' ?></p>
+                    <h1 class="text-4xl font-bold text-white mt-4 pt-1"><?php echo !empty($postTitle) ? $postTitle : ''; ?></h1>
+                    <p class="text-slate-300 text-lg uppercase tracking-widest mt-2"><?php echo !empty($position) ? $position : '' ?></p>
             
                     <div class="flex justify-start items-center mt-1 space-x-2">
                         <div class="flex text-yellow-400 text-sm">
@@ -95,7 +95,7 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                             if (!empty($street) && !empty($city) && !empty($state)) {
                                 echo $street . ' &bull; ' . $city . ' &bull; ' . $state;
                             }else{
-                                echo 'N/A';
+                                echo '';
                             }
                             ?>
                         </span>
@@ -103,12 +103,12 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
 
                     <div class="flex items-center text-gray-700 mb-3">
                         <i class="fa-solid fa-award w-8 text-[#053c57] me-3"></i>
-                        <span class="text-2xl font-medium text-gray-500"><?php echo !empty($experience) ? $experience : 'N/A'; ?></span>
+                        <span class="text-2xl font-medium text-gray-500"><?php echo !empty($experience) ? $experience : ''; ?></span>
                     </div>
 
                     <div class="flex items-center text-gray-700 mb-2">
                         <i class="fa-solid fa-phone w-8 text-[#053c57] me-3"></i>
-                        <span class="text-2xl font-medium text-gray-500"><?php echo !empty($contact) ? $contact : 'N/A'; ?></span>
+                        <span class="text-2xl font-medium text-gray-500"><?php echo !empty($contact) ? $contact : ''; ?></span>
                     </div>
 
                     
@@ -122,12 +122,24 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                                     <i class="fa-brands fa-instagram"></i>
                                 </a>
                                 <?php
+                            }else{
+                                ?>
+                                <span class="text-4xl text-gray-400 cursor-not-allowed">
+                                    <i class="fa-brands fa-instagram"></i>
+                                </span>
+                                <?php
                             }
                             if(!empty($facebookUrl)){
                                 ?>
                                 <a href="<?php echo $facebookUrl; ?>" target="_blank" class="text-4xl text-gray-600 hover:text-gray-600 transition">
                                     <i class="fa-brands fa-facebook"></i>
                                 </a>
+                                <?php
+                            }else{
+                                ?>
+                                 <span class="text-4xl text-gray-400 cursor-not-allowed">
+                                   <i class="fa-brands fa-facebook"></i>
+                                </span>
                                 <?php
                             }
                             ?>
@@ -141,11 +153,11 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                     <ul class="space-y-4">
                         <li class="flex justify-between">
                             <span class="font-semibold">Experience:</span>
-                            <span><?php echo !empty($experience) ? $experience : 'N/A'; ?></span>
+                            <span><?php echo !empty($experience) ? $experience : ''; ?></span>
                         </li>
                         <li class="flex justify-between">
                             <span class="font-semibold">Specialty:</span>
-                            <span class="text-[#0e182b] font-bold"><?php echo !empty($speciality) ? $speciality : 'N/A'; ?></span>
+                            <span ><?php echo !empty($speciality) ? $speciality : ''; ?></span>
                         </li>
                     </ul>
                     <a href="<?php echo !empty($bookingLink) ? $bookingLink : 'javascript:void(0);' ?>">
@@ -175,10 +187,16 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                     <div class="text-[14px] space-y-2">
                 
                         <?php if (!$has_data): ?>
-                            <div class="flex justify-between font-semibold">
-                                <span>Availability</span>
-                                <span class="text-gray-500">N/A</span>
-                            </div>
+                            <?php 
+                            $days_order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                            foreach ($days_order as $day): ?>
+                                
+                                <div class="flex justify-between font-semibold">
+                                    <span><?php echo esc_html($day); ?></span>
+                                    <span class="text-gray-400">—</span> <!-- or "Not Available" -->
+                                </div>
+                        
+                            <?php endforeach; ?>
                 
                         <?php else: 
                 
@@ -253,13 +271,13 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                             // Get price (adjust if using ACF or term meta)
                             $price = get_field('price', 'stylist_service_' . $service->term_id); 
                             if (!$price) {
-                                $price = 'N/A';
+                                $price = '';
                             }
                 
                             // Get description
                             $description = term_description($service->term_id);
                             if (!$description) {
-                                $description = 'N/A';
+                                $description = '';
                             }
                         ?>
                             <div class="p-4 border border-gray-100 rounded-xl hover:bg-white transition shadow-sm">
@@ -269,7 +287,7 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                                     </span>
                 
                                     <span class="text-[#ff5792] text-2xl font-bold">
-                                        <?php echo ($price === 'N/A') ? 'N/A' : '$' . esc_html($price) . '+'; ?>
+                                        <?php echo ($price === '') ? '' : '$' . esc_html($price) . '+'; ?>
                                     </span>
                                 </div>
                 
@@ -283,7 +301,7 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                 <?php else : ?>
                     <div class="glass-card rounded-2xl p-6">
                         <h3 class="text-3xl font-bold mb-6">Service Menu</h3>
-                        <p class="text-gray-400">N/A</p>
+                        <p class="text-gray-400"></p>
                     </div>
                 <?php endif; ?>
                 
@@ -350,7 +368,7 @@ $suiteAddress = get_post_meta($stylist_id, 'suite_address', true);
                                 <div>
                                     <p class="text-black text-2xl font-bold tracking-widest">Address</p>
                                     <p class="text-[14px] text-gray-700 leading-relaxed mt-1">
-                                        <?php echo !empty($suiteAddress) ? esc_html($suiteAddress) : 'N/A'; ?>
+                                        <?php echo !empty($suiteAddress) ? esc_html($suiteAddress) : ''; ?>
                                     </p>
                                 </div>
             

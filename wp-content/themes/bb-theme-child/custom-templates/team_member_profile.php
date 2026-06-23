@@ -40,17 +40,17 @@ $email = get_post_meta($memberId, 'email', true);
                     <?php
                     if(!empty($instagramUrl)){
                         ?>
-                        <a href="<?php echo $instagramUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/instagram.png" /></a>
+                        <a href="<?php echo $instagramUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/instagram.png" /></a>
                         <?php
                     }
                     if(!empty($facebookUrl)){
                         ?>
-                        <a href="<?php echo $facebookUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/facebook.png" /></a>
+                        <a href="<?php echo $facebookUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/facebook.png" /></a>
                         <?php
                     }
                     if(!empty($tikTokUrl)){
                         ?>
-                        <a href="<?php echo $tikTokUrl; ?>"><img src="https://legacysalon.betaplanets.com/wp-content/uploads/2026/01/music.png" /></a>
+                        <a href="<?php echo $tikTokUrl; ?>"><img src="https://legacysalonsarlington.com/wp-content/uploads/2026/01/music.png" /></a>
                         <?php
                     }
                     ?>

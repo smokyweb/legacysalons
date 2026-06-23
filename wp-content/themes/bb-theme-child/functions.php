@@ -11,18 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit; 
 }
 
-/**
- * Enqueue child theme style.css file
- * Do not delete this, you will need it
- */
-// add_action( 'wp_enqueue_scripts', function() {
-//   wp_enqueue_style(
-//     'child-style',
-//     get_stylesheet_uri(),
-//     array( 'fl-automator-skin' ),
-//     wp_get_theme()->get( 'Version' )
-//   );
-// });
+
 add_action(
   'wp_enqueue_scripts',
   function () {
@@ -52,9 +41,18 @@ add_action(
       (string) filemtime( $signup_js ),
       true
     );
+
+    wp_localize_script(
+      'bb-child-signup-a-suite',
+      'legacySignupSuiteConfig',
+      array(
+        'autoOpenOnHome' => is_front_page(),
+      )
+    );
   },
   25
 );
+
 
 /**
  * Render the SignUp A Suite contact form.
@@ -91,6 +89,74 @@ function bb_child_render_signup_suite_form( $args = array() ) {
 }
 
 /**
+ * Service sections for location stylist directory pages.
+ *
+ * @return array<int, array{id: string, title: string, slugs: string[]}>
+ */
+function bb_child_get_location_stylist_sections() {
+  return array(
+    array(
+      'id'    => 'hair-stylists',
+      'title' => __( 'Hair Stylists', 'bb-theme-child' ),
+      'slugs' => array( 'hair', 'barber', 'braider' ),
+    ),
+    array(
+      'id'    => 'nail-technicians',
+      'title' => __( 'Nail Technicians', 'bb-theme-child' ),
+      'slugs' => array( 'nails' ),
+    ),
+    array(
+      'id'    => 'estheticians',
+      'title' => __( 'Estheticians', 'bb-theme-child' ),
+      'slugs' => array( 'skin', 'waxing', 'medspa', 'wellness' ),
+    ),
+    array(
+      'id'    => 'lash-artists',
+      'title' => __( 'Lash Artists', 'bb-theme-child' ),
+      'slugs' => array( 'lashes', 'permanent-make-up' ),
+    ),
+  );
+}
+
+/**
+ * Render stylists for a location, grouped by service category.
+ *
+ * @param array $args location_slug (string|string[]), location_label, page_heading.
+ */
+function bb_child_render_location_stylists_directory( $args = array() ) {
+  $defaults = array(
+    'location_slug'  => '',
+    'location_label' => '',
+    'page_heading'   => __( 'Salon Suites for Beauty Professionals in Arlington TX', 'bb-theme-child' ),
+  );
+
+  $args = wp_parse_args( $args, $defaults );
+
+  $location_slugs = is_array( $args['location_slug'] )
+    ? array_values( array_filter( array_map( 'sanitize_title', $args['location_slug'] ) ) )
+    : array_values( array_filter( array( sanitize_title( (string) $args['location_slug'] ) ) ) );
+
+  if ( empty( $location_slugs ) ) {
+    return;
+  }
+
+  if ( '' === $args['location_label'] ) {
+    $args['location_label'] = ucwords( str_replace( array( '-', '_' ), ' ', $location_slugs[0] ) );
+  }
+
+  $location_slug  = $location_slugs;
+  $location_label = (string) $args['location_label'];
+  $page_heading   = (string) $args['page_heading'];
+
+  $partial = get_stylesheet_directory() . '/custom-templates/partials/location-stylists-directory.php';
+  if ( ! file_exists( $partial ) ) {
+    return;
+  }
+
+  include $partial;
+}
+
+/**
  * Popup modal with SignUp A Suite form (opened from top bar).
  */
 function bb_child_render_signup_suite_modal() {
@@ -104,7 +170,7 @@ function bb_child_render_signup_suite_modal() {
     <div class="signup-a-suite-modal__backdrop" data-signup-modal-close></div>
     <div class="signup-a-suite-modal__dialog">
      <div class="signup-a-suite-modal__header">
-        <h2 id="signup-a-suite-modal-title" class="signup-a-suite-heading"><?php esc_html_e( 'Find Your Suite', 'bb-theme-child' ); ?></h2>
+        <h2 id="signup-a-suite-modal-title" class="signup-a-suite-heading"><?php esc_html_e( 'Find A Suite', 'bb-theme-child' ); ?></h2>
         <button type="button" class="signup-a-suite-modal__close" data-signup-modal-close aria-label="<?php esc_attr_e( 'Close', 'bb-theme-child' ); ?>">
           <span class="signup-a-suite-modal__close-icon" aria-hidden="true"></span>
         </button>
@@ -129,83 +195,4 @@ function bb_child_render_signup_suite_modal() {
   <?php
 }
 add_action( 'wp_footer', 'bb_child_render_signup_suite_modal', 5 );
-
-
-
-
-// function gallery_slider() {
-//     $html = '
-    
-//     <div class="container-fluid text-center">
-//             <div class="d-flex flex-wrap justify-content-center">
-//                 <button class="filter-btn active">All</button>
-//                 <button class="filter-btn">Hair</button>
-//                 <button class="filter-btn">Color</button>
-//                 <button class="filter-btn">Nails</button>
-//                 <button class="filter-btn">Lashes</button>
-//                 <button class="filter-btn">Makeup</button>
-//                 <button class="filter-btn">Brows</button>
-//                 <button class="filter-btn">Our Styles</button>
-//                 <button class="filter-btn">Community</button>
-//             </div>
-//     </div>
-//     <br><br>
-//     <div id="sync1" class="owl-carousel owl-theme">
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         </div>
-        
-//     <div id="sync2" class="owl-carousel owl-theme">
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//         <div class="item">
-
-//         </div>
-//     </div>
-//     ';
-//     // The function MUST return the HTML string, not echo it.
-//     return $html;
-// }
-// add_shortcode( 'gallerySlider', 'gallery_slider' );
 

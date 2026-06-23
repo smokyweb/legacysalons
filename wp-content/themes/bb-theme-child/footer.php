@@ -111,6 +111,23 @@ jQuery(document).ready(function(){
     jQuery('#topbar .notice_close, header .notice .notice_close').on('click', function(event){
         event.preventDefault();
         event.stopPropagation();
+        
+        var modal = document.getElementById('signup-a-suite-modal');
+        if (modal && modal.classList.contains('is-open')) {
+            if (window.legacySignupSuite && typeof window.legacySignupSuite.closeModal === 'function') {
+                window.legacySignupSuite.closeModal(modal);
+            } else {
+                var active = document.activeElement;
+                if (active && modal.contains(active) && typeof active.blur === 'function') {
+                    active.blur();
+                }
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+                modal.setAttribute('inert', '');
+                document.body.classList.remove('signup-a-suite-modal-open');
+            }
+            return;
+        }
         jQuery('.fl-node-ngzi3hcf4td6').css('display', 'none');
     });
 });    

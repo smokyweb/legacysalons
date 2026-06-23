@@ -37,6 +37,91 @@
                     initAutocomplete($el);
                 }
             });
+            
+            function restrictExperienceToDigits($input) {
+                if (!$input || !$input.length || $input.data('legacyDigitsOnly')) {
+                    return;
+                }
+                
+                 var maxDigits = 3;
+                var maxValue = 999;
+
+                function normalizeExperienceValue(value) {
+                    var cleaned = String(value || '').replace(/\D/g, '').slice(0, maxDigits);
+
+                    if (cleaned !== '' && parseInt(cleaned, 10) > maxValue) {
+                        cleaned = String(maxValue);
+                    }
+
+                    return cleaned;
+                }
+
+                $input.data('legacyDigitsOnly', true);
+                $input.attr({
+                    inputmode: 'numeric',
+                    pattern: '[0-9]{1,3}',
+                    min: '0',
+                    max: String(maxValue),
+                    step: '1'
+                });
+                 
+                $input.val(normalizeExperienceValue($input.val()));
+                 
+                $input.on('input', function () {
+                    var cleaned = normalizeExperienceValue($(this).val());
+
+                    if ($(this).val() !== cleaned) {
+                        $(this).val(cleaned);
+                    }
+                });
+
+                $input.on('keydown', function (e) {
+                    var allowedKeys = [8, 9, 13, 27, 46, 37, 38, 39, 40];
+
+                    if (allowedKeys.indexOf(e.keyCode) !== -1) {
+                        return;
+                    }
+
+                    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].indexOf(e.keyCode) !== -1) {
+                        return;
+                    }
+
+                     if (e.key && e.key.length === 1) {
+                        if (!/^\d$/.test(e.key)) {
+                            e.preventDefault();
+                            return;
+                        }
+
+                        var current = String($(this).val() || '');
+                        var selectionLength = (this.selectionEnd || 0) - (this.selectionStart || 0);
+
+                        if (selectionLength === 0 && current.replace(/\D/g, '').length >= maxDigits) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                $input.on('paste', function (e) {
+                      e.preventDefault();
+                    var pasted = '';
+
+                    if (e.originalEvent && e.originalEvent.clipboardData) {
+                        pasted = e.originalEvent.clipboardData.getData('text');
+                    }
+
+                    var current = String($(this).val() || '');
+                    var start = this.selectionStart || 0;
+                    var end = this.selectionEnd || 0;
+                    var merged = current.slice(0, start) + pasted + current.slice(end);
+                    var cleaned = normalizeExperienceValue(merged);
+
+                    $(this).val(cleaned);
+                });
+            }
+
+            acf.add_action('ready_field/name=experience', function ($field) {
+                restrictExperienceToDigits($field.find('input'));
+            });
         }
 
         /* -------------------------------------------------------------------------
