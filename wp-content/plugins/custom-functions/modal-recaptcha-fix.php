@@ -76,7 +76,16 @@ function las_modal_recaptcha_enqueue() {
 }
 
 /* -----------------------------------------------------------------------
- * 2. Server-side reCAPTCHA verification — shared utility
+ * 2. Inline spacing — margin between the field above and the widget
+ * -------------------------------------------------------------------- */
+add_action( 'wp_head', 'las_modal_recaptcha_inline_css', 30 );
+
+function las_modal_recaptcha_inline_css() {
+	echo '<style id="las-modal-recaptcha-css">.las-modal-recaptcha-wrap{margin-top:16px;}</style>' . "\n";
+}
+
+/* -----------------------------------------------------------------------
+ * 3. Server-side reCAPTCHA verification — shared utility
  * -------------------------------------------------------------------- */
 function las_modal_verify_recaptcha( $token ) {
 	$secret = get_option( 'hostbox_recaptcha_secret_key', '' );
