@@ -1265,7 +1265,7 @@ jQuery(document).ready(function ($) {
         }
 
         // Step 2: All fields valid — now check reCAPTCHA
-        if (window.lasRecaptcha && modalEl && modalEl.querySelector('.las-modal-recaptcha-wrap')) {
+        if (window.lasRecaptcha && modalEl) {
             var recaptchaToken = window.lasRecaptcha.getToken(modalEl);
             if (!recaptchaToken) {
                 window.lasRecaptcha.showError(modalEl, window.lasRecaptcha.errorMsg);
