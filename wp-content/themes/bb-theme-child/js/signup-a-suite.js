@@ -162,6 +162,10 @@
 		if (field) {
 			field.classList.remove('is-invalid');
 		}
+		var trigger = form.querySelector('.signup-a-suite-multi-select__trigger');
+		if (trigger) {
+			trigger.style.removeProperty('border');
+		}
 		var errorEl = form.querySelector('[data-profession-services-error]');
 		if (errorEl) {
 			errorEl.textContent = '';
@@ -176,6 +180,10 @@
 		var field = form.querySelector('[data-profession-services-field]');
 		if (field) {
 			field.classList.add('is-invalid');
+		}
+		var trigger = form.querySelector('.signup-a-suite-multi-select__trigger');
+		if (trigger) {
+			trigger.style.setProperty('border', '1px solid red', 'important');
 		}
 		var errorEl = form.querySelector('[data-profession-services-error]');
 		if (errorEl) {
