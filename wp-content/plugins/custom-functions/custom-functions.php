@@ -11,6 +11,8 @@ if (!defined('ABSPATH')) exit;
 // Include shortcode and AJAX files
 require_once plugin_dir_path(__FILE__) . 'shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'handlers.php';
+require_once plugin_dir_path(__FILE__) . 'recaptcha-cf7-fix.php';
+require_once plugin_dir_path(__FILE__) . 'modal-recaptcha-fix.php';
 // function custom_functions_enqueue_scripts() {
 //     wp_enqueue_script(
 //         'custom-all-js',
