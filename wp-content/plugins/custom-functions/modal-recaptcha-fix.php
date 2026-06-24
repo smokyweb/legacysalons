@@ -82,6 +82,7 @@ add_action( 'wp_head', 'las_modal_recaptcha_inline_css', 30 );
 
 function las_modal_recaptcha_inline_css() {
 	echo '<style id="las-modal-recaptcha-css">
+		/* ---- Modal reCAPTCHA wrap (personalInfoModal, suite-matching, signup-a-suite) ---- */
 		.las-modal-recaptcha-wrap {
 			margin-top: 16px;
 			position: relative;
@@ -91,6 +92,20 @@ function las_modal_recaptcha_inline_css() {
 			touch-action: manipulation;
 		}
 		.las-modal-recaptcha-wrap iframe {
+			touch-action: manipulation;
+			pointer-events: auto !important;
+		}
+		/* ---- Universal fix: every Google reCAPTCHA widget on the site ---- */
+		.g-recaptcha,
+		.hostbox-recaptcha-wrap {
+			position: relative;
+			z-index: 2;
+			-webkit-transform: translateZ(0);
+			transform: translateZ(0);
+			touch-action: manipulation;
+		}
+		.g-recaptcha iframe,
+		.hostbox-recaptcha-wrap iframe {
 			touch-action: manipulation;
 			pointer-events: auto !important;
 		}

@@ -125,6 +125,8 @@ function legacy_cf7_recaptcha_inline_css() {
 	echo '<style id="hostbox-recaptcha-fix-css">'
 	   . '.hostbox-recaptcha-error{display:none;}'
 	   . '.hostbox-recaptcha-error:not(:empty){display:block;}'
+	   . '.hostbox-recaptcha-wrap{position:relative;z-index:2;-webkit-transform:translateZ(0);transform:translateZ(0);touch-action:manipulation;}'
+	   . '.hostbox-recaptcha-wrap iframe{touch-action:manipulation;pointer-events:auto!important;}'
 	   . '</style>' . "\n";
 }
 
