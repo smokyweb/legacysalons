@@ -1331,6 +1331,11 @@ jQuery(document).ready(function ($) {
         $(this).next('.error-msg').text('');
     });
 
+    // Clear contact-method error when a radio option is selected
+    $(document).on('change', 'input[name="contact"], input[name="suite_match_contact"]', function() {
+        $(this).closest('#personalInfoModal, #suite-matching-personal-modal').find('.contact-error').remove();
+    });
+
     // Close modal
     $(document).on('click', '.close-modal, [data-suite-matching-personal-close]', function() {
         closePersonalInfoModal();
