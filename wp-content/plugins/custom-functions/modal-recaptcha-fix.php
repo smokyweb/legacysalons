@@ -81,7 +81,20 @@ function las_modal_recaptcha_enqueue() {
 add_action( 'wp_head', 'las_modal_recaptcha_inline_css', 30 );
 
 function las_modal_recaptcha_inline_css() {
-	echo '<style id="las-modal-recaptcha-css">.las-modal-recaptcha-wrap{margin-top:16px;}</style>' . "\n";
+	echo '<style id="las-modal-recaptcha-css">
+		.las-modal-recaptcha-wrap {
+			margin-top: 16px;
+			position: relative;
+			z-index: 2;
+			-webkit-transform: translateZ(0);
+			transform: translateZ(0);
+			touch-action: manipulation;
+		}
+		.las-modal-recaptcha-wrap iframe {
+			touch-action: manipulation;
+			pointer-events: auto !important;
+		}
+	</style>' . "\n";
 }
 
 /* -----------------------------------------------------------------------
