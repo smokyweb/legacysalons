@@ -125,6 +125,30 @@
 	}
 
 	/* -----------------------------------------------------------------
+	 * Remove -webkit-overflow-scrolling:touch from every scroll ancestor
+	 * of el.  This is the root cause of reCAPTCHA iframe not receiving
+	 * touch events on iOS/iPadOS inside momentum-scroll containers.
+	 * Safe to call repeatedly – only patches nodes that actually have it.
+	 * --------------------------------------------------------------- */
+	function patchScrollAncestors( el ) {
+		var node = el ? el.parentElement : null;
+		while ( node && node !== document.documentElement ) {
+			// Inline style already set to touch
+			if ( node.style && node.style.webkitOverflowScrolling === 'touch' ) {
+				node.style.setProperty( '-webkit-overflow-scrolling', 'auto', 'important' );
+			}
+			// Computed (CSS-applied) value
+			try {
+				var cs = window.getComputedStyle( node );
+				if ( cs.getPropertyValue( '-webkit-overflow-scrolling' ) === 'touch' ) {
+					node.style.setProperty( '-webkit-overflow-scrolling', 'auto', 'important' );
+				}
+			} catch ( e ) { /* cross-origin or detached – skip */ }
+			node = node.parentElement;
+		}
+	}
+
+	/* -----------------------------------------------------------------
 	 * Render a grecaptcha widget into scope's .las-modal-recaptcha-widget
 	 * --------------------------------------------------------------- */
 	function renderWidget( scope ) {
@@ -145,6 +169,8 @@
 				}
 			} );
 			widgetEl._lasWidgetId = wid;
+			// Fix iOS/iPadOS touch: remove momentum-scroll from every ancestor
+			patchScrollAncestors( widgetEl );
 		} catch ( e ) {
 			// grecaptcha.render can throw if the element was already rendered.
 			// No-op: the widget is functional, just skip double-render.

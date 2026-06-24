@@ -105,9 +105,17 @@ function las_modal_recaptcha_inline_css() {
 			touch-action: manipulation;
 		}
 		.g-recaptcha iframe,
-		.hostbox-recaptcha-wrap iframe {
+		.hostbox-recaptcha-wrap iframe,
+		.las-modal-recaptcha-widget iframe {
 			touch-action: manipulation;
 			pointer-events: auto !important;
+		}
+		/* ---- Override momentum-scroll on known reCAPTCHA scroll ancestors ---- */
+		/* signup-a-suite-modal: both dialog (overflow:auto) and body  */
+		/* (-webkit-overflow-scrolling:touch) trap iOS touch before the iframe */
+		.signup-a-suite-modal__dialog,
+		.signup-a-suite-modal__body {
+			-webkit-overflow-scrolling: auto !important;
 		}
 	</style>' . "\n";
 }
