@@ -37,14 +37,27 @@
 	top: 12px;
 	right: 12px;
 	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 40px;
 	height: 40px;
+	padding: 0;
 	border: none;
 	border-radius: 50%;
 	background: #f3f3f3;
 	color: #333;
 	font-size: 28px;
 	line-height: 1;
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease;
+}
+
+.suite-matching-modal__close:hover,
+.suite-matching-modal__close:focus {
+	background: #e0e0e0;
+	color: #111;
+	outline: none;
 	cursor: pointer;
 }
 
@@ -86,8 +99,31 @@
 #personalInfoModal .close-modal {
 	position: absolute;
 	top: 12px;
-	right: 16px;
-	cursor: pointer;
-	font-size: 28px;
+	right: 12px;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.08);
+	color: #333;
+	font-size: 24px;
 	line-height: 1;
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease;
+	user-select: none;
+}
+
+.suite-matching-personal-modal__close:hover,
+.suite-matching-personal-modal__close:focus,
+#personalInfoModal .close-modal:hover,
+#personalInfoModal .close-modal:focus {
+	background: rgba(0, 0, 0, 0.18);
+	color: #111;
+	outline: none;
+	cursor: pointer;
 }
