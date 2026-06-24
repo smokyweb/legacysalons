@@ -879,6 +879,12 @@ jQuery(document).ready(function ($) {
         var legacyModal = document.getElementById('personalInfoModal');
         setupPersonalModalElement(legacyModal, 'personal-info-modal-title');
 
+        // Force cursor:pointer inline on all close buttons (overrides any theme CSS)
+        var closeButtons = document.querySelectorAll('#personalInfoModal .close-modal, #suite-matching-personal-modal .suite-matching-personal-modal__close, [data-suite-matching-personal-close]');
+        closeButtons.forEach(function(btn) {
+            btn.style.setProperty('cursor', 'pointer', 'important');
+        });
+
         if (document.getElementById('suite-matching-personal-modal') && legacyModal) {
             legacyModal.style.display = 'none';
             legacyModal.setAttribute('aria-hidden', 'true');
