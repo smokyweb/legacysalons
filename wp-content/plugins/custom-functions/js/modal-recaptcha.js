@@ -47,6 +47,8 @@
 		var el = getErrorEl( scope );
 		if ( ! el ) { return; }
 		el.textContent = msg || ERROR_MSG;
+		el.style.color = 'red';
+		el.style.fontSize = '13px';
 		el.style.display = 'block';
 	}
 
@@ -161,6 +163,19 @@
 		// Widget not yet rendered (e.g. grecaptcha API not loaded yet)
 		if ( ! form.querySelector( '.las-modal-recaptcha-wrap' ) ) { return; }
 
+		// Validate all required fields FIRST — only show CAPTCHA error if fields are valid
+		var validateFn = window.legacySignupSuite && window.legacySignupSuite.validateFields;
+		if ( validateFn ) {
+			if ( ! validateFn( form ) ) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return; // Field errors shown; do NOT show CAPTCHA error
+			}
+		} else if ( ! form.checkValidity() ) {
+			// validateFields not available yet — fall through so form handles it
+			return;
+		}
+
 		var token = getToken( form );
 
 		if ( ! token ) {
@@ -170,7 +185,7 @@
 			return;
 		}
 
-		// Valid — write token into a hidden input so FormData includes it
+		// All valid — write token into a hidden input so FormData includes it
 		clearError( form );
 		var hidden = form.querySelector( 'input[name="g_recaptcha_response"]' );
 		if ( ! hidden ) {
@@ -199,6 +214,16 @@
 		// Widget not yet rendered
 		if ( ! modal.querySelector( '.las-modal-recaptcha-wrap' ) ) { return; }
 
+		// Validate all required fields FIRST — only show CAPTCHA error if fields are valid
+		var validateFn = window.lasValidatePersonalModal;
+		if ( validateFn ) {
+			if ( ! validateFn( modal ) ) {
+				e.stopImmediatePropagation();
+				e.preventDefault();
+				return; // Field errors shown; do NOT show CAPTCHA error
+			}
+		}
+
 		var token = getToken( modal );
 
 		if ( ! token ) {
@@ -208,7 +233,7 @@
 			return;
 		}
 
-		// Valid — stash the token; ajaxSend will inject it
+		// All valid — stash the token; ajaxSend will inject it
 		clearError( modal );
 		pendingMatchToken = token;
 	}, true ); /* capture = true */

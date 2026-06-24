@@ -154,7 +154,7 @@ if ( function_exists( 'signup_a_suite_get_profession_service_options' ) ) {
 	<div>
 	    <div class="signup-a-suite-field">
     		<label for="<?php echo esc_attr( $field_prefix ); ?>-message"><?php esc_html_e( 'Message', 'bb-theme-child' ); ?></label>
-    		<textarea id="<?php echo esc_attr( $field_prefix ); ?>-message" name="message" rows="5" placeholder="<?php esc_attr_e( 'Type something here..', 'bb-theme-child' ); ?>" required></textarea>
+    		<textarea id="<?php echo esc_attr( $field_prefix ); ?>-message" name="message" rows="5" placeholder="<?php esc_attr_e( 'Type something here..', 'bb-theme-child' ); ?>"></textarea>
     	</div>
     
     	<div class="las-modal-recaptcha-wrap">

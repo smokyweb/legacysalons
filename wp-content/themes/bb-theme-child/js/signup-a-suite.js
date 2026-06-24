@@ -416,6 +416,8 @@
 				field.setCustomValidity('');
 			}
 		});
+
+		clearAllSignupFieldErrors(form);
 	}
 
 	function resetModalFormState() {
@@ -448,6 +450,90 @@
 
 	function phoneDigits(value) {
 		return String(value || '').replace(/\D/g, '').slice(0, 10);
+	}
+
+	/* ------------------------------------------------------------------
+	 * Inline field error helpers
+	 * ---------------------------------------------------------------- */
+	function showFieldInlineError(field, message) {
+		var wrap = field.closest('.signup-a-suite-field');
+		if (!wrap) { return; }
+		field.style.setProperty('border', '1px solid red', 'important');
+		var errEl = wrap.querySelector('.las-field-inline-error');
+		if (!errEl) {
+			errEl = document.createElement('p');
+			errEl.className = 'las-field-inline-error';
+			wrap.appendChild(errEl);
+		}
+		errEl.style.cssText = 'color:red;font-size:13px;margin:4px 0 0;display:block;';
+		errEl.textContent = message;
+	}
+
+	function clearFieldInlineError(field) {
+		if (!field) { return; }
+		field.style.removeProperty('border');
+		var wrap = field.closest ? field.closest('.signup-a-suite-field') : null;
+		if (!wrap) { return; }
+		var errEl = wrap.querySelector('.las-field-inline-error');
+		if (errEl) {
+			errEl.textContent = '';
+			errEl.style.display = 'none';
+		}
+	}
+
+	function clearAllSignupFieldErrors(form) {
+		if (!form) { return; }
+		form.querySelectorAll('.las-field-inline-error').forEach(function(el) {
+			el.textContent = '';
+			el.style.display = 'none';
+		});
+		form.querySelectorAll('input, select').forEach(function(el) {
+			el.style.removeProperty('border');
+		});
+	}
+
+	/* ------------------------------------------------------------------
+	 * Full inline field validation — returns true if all valid.
+	 * All required non-textarea fields validated; CAPTCHA NOT checked here.
+	 * ---------------------------------------------------------------- */
+	function validateSignupFields(form) {
+		if (!form) { return false; }
+		var valid = true;
+
+		clearAllSignupFieldErrors(form);
+		clearProfessionServicesError(form);
+
+		// Required text / email / select fields (NOT tel, NOT hidden, NOT textarea)
+		var requiredInputs = form.querySelectorAll(
+			'input[required]:not([type="hidden"]):not([type="tel"]):not([type="checkbox"]):not([type="radio"]), select[required]'
+		);
+		requiredInputs.forEach(function(input) {
+			var value = input.tagName === 'SELECT' ? input.value : input.value.trim();
+			if (!value) {
+				var labelEl = input.closest('.signup-a-suite-field') &&
+					input.closest('.signup-a-suite-field').querySelector('label');
+				var fieldName = labelEl ? labelEl.textContent.trim() : 'This field';
+				showFieldInlineError(input, fieldName + ' is required.');
+				valid = false;
+			} else if (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+				showFieldInlineError(input, 'Please enter a valid email address.');
+				valid = false;
+			}
+		});
+
+		// Phone — has its own rich validator
+		var phoneInput = form.querySelector('[name="phone"]');
+		if (phoneInput && !validatePhoneInput(phoneInput, true)) {
+			valid = false;
+		}
+
+		// Profession / services multi-select
+		if (getProfessionServiceInputs(form).length && !hasProfessionServiceSelection(form)) {
+			showProfessionServicesError(form, 'Please select at least one profession/service.');
+			valid = false;
+		}
+
+		return valid;
 	}
 
 	function formatUSPhone(digits) {
@@ -604,23 +690,21 @@
 		bindModalLocationLock(form);
 		bindProfessionServicesField(form);
 
+		// Clear inline errors as user corrects fields
+		form.addEventListener('input', function(event) {
+			var t = event.target;
+			if (t && t.tagName !== 'TEXTAREA') { clearFieldInlineError(t); }
+		});
+		form.addEventListener('change', function(event) {
+			var t = event.target;
+			if (t) { clearFieldInlineError(t); }
+		});
+
 		form.addEventListener('submit', function (event) {
 			event.preventDefault();
 
-			if (phoneInput && !validatePhoneInput(phoneInput, true)) {
-				phoneInput.focus();
-				phoneInput.reportValidity();
-				return;
-			}
-
-			if (getProfessionServiceInputs(form).length && !hasProfessionServiceSelection(form)) {
-				showProfessionServicesError(form, 'Please select at least one profession/service.');
-				return;
-			}
-			clearProfessionServicesError(form);
-
-			if (!form.checkValidity()) {
-				form.reportValidity();
+			// Validate all required fields inline first
+			if (!validateSignupFields(form)) {
 				return;
 			}
 
@@ -1211,6 +1295,7 @@
 		bindForm: bindSignupForm,
 		init: initSignupSuite,
 		formatUSPhone: formatUSPhone,
-		phoneDigits: phoneDigits
+		phoneDigits: phoneDigits,
+		validateFields: validateSignupFields
 	};
 })();

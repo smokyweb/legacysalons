@@ -1177,67 +1177,98 @@ jQuery(document).ready(function ($) {
     bindUSPhoneField($('#phone'));
     bindUSPhoneField($('#suite-match-phone'));
 
+    /* ------------------------------------------------------------------
+     * Shared inline validation for personalInfoModal / suite-matching-personal-modal.
+     * Returns true if all fields are valid; shows inline red errors if not.
+     * ---------------------------------------------------------------- */
+    function validatePersonalModalFields($modalScope, config) {
+        var isValid = true;
+
+        // Clear previous errors
+        $modalScope.find('.error-msg').each(function() {
+            $(this).text('');
+        });
+        $modalScope.find(config.name + ', ' + config.email + ', ' + config.phone)
+            .css('border', '').css('outline', '');
+
+        function showErr($input, message) {
+            $input.css('border', '1px solid red');
+            if ($input.next('.error-msg').length === 0) {
+                $input.after('<span class="error-msg" style="color:red;font-size:13px;display:block;margin-top:4px;"></span>');
+            }
+            $input.next('.error-msg')
+                .text(message)
+                .css({ color: 'red', 'font-size': '13px', display: 'block', 'margin-top': '4px' });
+            isValid = false;
+        }
+
+        var $name    = $modalScope.find(config.name);
+        var $email   = $modalScope.find(config.email);
+        var $phone   = $modalScope.find(config.phone);
+        var $contact = $modalScope.find('input[name="' + config.contact + '"]:checked');
+
+        if (!$name.val() || !$name.val().trim()) {
+            showErr($name, 'Please enter your name');
+        }
+
+        if (!$email.val() || !$email.val().trim()) {
+            showErr($email, 'Please enter your email');
+        } else {
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test($email.val().trim())) {
+                showErr($email, 'Please enter a valid email');
+            }
+        }
+
+        var phoneDigitsCheck = personalPhoneDigits($phone.val());
+        if (phoneDigitsCheck) {
+            $phone.val(personalFormatUSPhone(phoneDigitsCheck));
+        }
+        if (!phoneDigitsCheck) {
+            showErr($phone, 'Please enter your phone number');
+        } else if (phoneDigitsCheck.length !== 10) {
+            showErr($phone, 'Enter a valid 10-digit phone number');
+        }
+
+        if ($contact.length === 0) {
+            $modalScope.find('.contact-error').remove();
+            $modalScope.find('.labelWrap').append(
+                '<span class="error-msg contact-error" style="color:red;font-size:13px;display:block;margin-top:4px;">Please select a contact method</span>'
+            );
+            isValid = false;
+        } else {
+            $modalScope.find('.contact-error').remove();
+        }
+
+        return isValid;
+    }
+
+    // Expose globally so modal-recaptcha.js can call it before CAPTCHA check
+    window.lasValidatePersonalModal = function(modal) {
+        if (!modal) { return false; }
+        var $modal = $(modal);
+        var config = getPersonalModalConfig($modal);
+        return validatePersonalModalFields($modal, config);
+    };
+
     // pop-up suite match submit event
     $(document).on('click', '.submit-btn, .suite-matching-submit-btn', function(e) {
         e.preventDefault();
         var $submitBtn = $(this);
         var config = getPersonalModalConfig($submitBtn);
         var $modalScope = config.modal ? $(config.modal) : $submitBtn.closest('#suite-matching-personal-modal, #personalInfoModal');
-        var isValid = true;
 
-        $modalScope.find('.error-msg').text('');
-        $modalScope.find(config.name + ', ' + config.email + ', ' + config.phone).css('border', '');
-
-        function showError($input, message) {
-            $input.css('border', '1px solid red');
-            if ($input.next('.error-msg').length === 0) {
-                $input.after('<span class="error-msg"></span>');
-            }
-
-            $input.next('.error-msg').text(message);
-            isValid = false;
-        }
-
-        var $name  = $modalScope.find(config.name);
-        var $email = $modalScope.find(config.email);
-        var $phone = $modalScope.find(config.phone);
-        var $contact = $modalScope.find('input[name="' + config.contact + '"]:checked');
-
-        if (!$name.val()) {
-            showError($name, 'Please enter your name');
-        }
-
-        if (!$email.val()) {
-            showError($email, 'Please enter your email');
-        } else {
-            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test($email.val())) {
-                showError($email, 'Please enter valid email');
-            }
-        }
-
-        var phoneDigitsVal = personalPhoneDigits($phone.val());
-        if (phoneDigitsVal) {
-            $phone.val(personalFormatUSPhone(phoneDigitsVal));
-        }
-
-        if (!phoneDigitsVal) {
-            showError($phone, 'Please enter your phone number');
-        } else if (phoneDigitsVal.length !== 10) {
-            showError($phone, 'Enter valid 10 digit phone');
-        }
-
-        if ($contact.length === 0) {
-            $modalScope.find('.contact-error').remove();
-            $modalScope.find('.labelWrap').append('<span class="error-msg contact-error">Please select contact method</span>');
-            isValid = false;
-        } else {
-            $modalScope.find('.contact-error').remove();
-        }
-
-        if (!isValid) {
+        // Validate all required fields — CAPTCHA check runs first in modal-recaptcha.js
+        // but this also acts as a safety net when reCAPTCHA is not loaded
+        if (!validatePersonalModalFields($modalScope, config)) {
             return;
         }
+
+        var $name        = $modalScope.find(config.name);
+        var $email       = $modalScope.find(config.email);
+        var $phone       = $modalScope.find(config.phone);
+        var $contact     = $modalScope.find('input[name="' + config.contact + '"]:checked');
+        var phoneDigitsVal = personalPhoneDigits($phone.val());
 
         var ajaxPostUrl = (typeof customAjax !== 'undefined' && customAjax.ajax_url)
             ? customAjax.ajax_url

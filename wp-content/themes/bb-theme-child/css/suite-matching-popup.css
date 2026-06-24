@@ -1,3 +1,36 @@
+/* -----------------------------------------------------------------------
+ * Inline validation error styles
+ * --------------------------------------------------------------------- */
+
+/* Signup-a-suite inline field errors */
+.las-field-inline-error {
+	color: red;
+	font-size: 13px;
+	margin: 4px 0 0;
+	display: none;
+}
+
+/* Personal info modal error spans */
+.error-msg {
+	color: red;
+	font-size: 13px;
+	display: block;
+	margin-top: 4px;
+}
+
+/* reCAPTCHA error (both modals) */
+.las-modal-recaptcha-error {
+	color: red;
+	font-size: 13px;
+	margin-top: 6px;
+}
+
+/* Invalid field border */
+.signup-a-suite-field input.is-invalid,
+.signup-a-suite-field select.is-invalid {
+	border: 1px solid red !important;
+}
+
 /* Suite matching footer popup */
 .suite-matching-modal {
 	display: none;
