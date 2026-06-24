@@ -152,91 +152,57 @@
 	}
 
 	/* =================================================================
-	 * SIGNUP-A-SUITE FORMS
-	 * Intercept the 'submit' event at document level in CAPTURE phase.
-	 * This fires before signup-a-suite.js's listener on the form element.
-	 * ================================================================ */
-	document.addEventListener( 'submit', function ( e ) {
-		var form = e.target;
-		if ( ! form || ! form.classList.contains( 'signup-a-suite-form' ) ) { return; }
-
-		// Widget not yet rendered (e.g. grecaptcha API not loaded yet)
-		if ( ! form.querySelector( '.las-modal-recaptcha-wrap' ) ) { return; }
-
-		// Validate all required fields FIRST — only show CAPTCHA error if fields are valid
-		var validateFn = window.legacySignupSuite && window.legacySignupSuite.validateFields;
-		if ( validateFn ) {
-			if ( ! validateFn( form ) ) {
-				e.preventDefault();
-				e.stopImmediatePropagation();
-				return; // Field errors shown; do NOT show CAPTCHA error
-			}
-		} else if ( ! form.checkValidity() ) {
-			// validateFields not available yet — fall through so form handles it
-			return;
-		}
-
-		var token = getToken( form );
-
-		if ( ! token ) {
-			e.preventDefault();
-			e.stopImmediatePropagation();
-			showError( form, ERROR_MSG );
-			return;
-		}
-
-		// All valid — write token into a hidden input so FormData includes it
-		clearError( form );
-		var hidden = form.querySelector( 'input[name="g_recaptcha_response"]' );
-		if ( ! hidden ) {
-			hidden       = document.createElement( 'input' );
-			hidden.type  = 'hidden';
-			hidden.name  = 'g_recaptcha_response';
-			form.appendChild( hidden );
-		}
-		hidden.value = token;
-	}, true ); /* capture = true */
-
-	/* =================================================================
-	 * PERSONAL INFO MODALS
-	 * Intercept .submit-btn click at document level in CAPTURE phase.
-	 * This fires before jQuery's delegated bubble-phase listener.
+	 * PUBLIC API
+	 * Exposed so signup-a-suite.js and custom.js can check CAPTCHA
+	 * AFTER their own field validation passes — no capture-phase needed.
 	 * ================================================================ */
 	var pendingMatchToken = '';
 
-	document.addEventListener( 'click', function ( e ) {
-		var btn = e.target;
-		if ( ! btn || ! btn.classList.contains( 'submit-btn' ) ) { return; }
+	window.lasRecaptcha = {
+		/**
+		 * Get the current reCAPTCHA token for a scope (form or modal element).
+		 * Returns '' if not completed.
+		 */
+		getToken: function ( scope ) {
+			return getToken( scope );
+		},
 
-		var modal = btn.closest( '#personalInfoModal, #suite-matching-personal-modal' );
-		if ( ! modal ) { return; }
+		/** Show the reCAPTCHA error in red below the widget. */
+		showError: function ( scope, msg ) {
+			showError( scope, msg );
+		},
 
-		// Widget not yet rendered
-		if ( ! modal.querySelector( '.las-modal-recaptcha-wrap' ) ) { return; }
+		/** Clear the reCAPTCHA error. */
+		clearError: function ( scope ) {
+			clearError( scope );
+		},
 
-		// Validate all required fields FIRST — only show CAPTCHA error if fields are valid
-		var validateFn = window.lasValidatePersonalModal;
-		if ( validateFn ) {
-			if ( ! validateFn( modal ) ) {
-				e.stopImmediatePropagation();
-				e.preventDefault();
-				return; // Field errors shown; do NOT show CAPTCHA error
+		/**
+		 * Write the token into a hidden input on a signup-a-suite form
+		 * so FormData picks it up on submission.
+		 */
+		injectFormToken: function ( form, token ) {
+			var hidden = form.querySelector( 'input[name="g_recaptcha_response"]' );
+			if ( ! hidden ) {
+				hidden      = document.createElement( 'input' );
+				hidden.type = 'hidden';
+				hidden.name = 'g_recaptcha_response';
+				form.appendChild( hidden );
 			}
-		}
+			hidden.value = token;
+		},
 
-		var token = getToken( modal );
+		/**
+		 * Stash a token for the personal-info modal AJAX call.
+		 * ajaxSend below will inject it into match_salon_suites requests.
+		 */
+		setPendingToken: function ( token ) {
+			pendingMatchToken = token;
+		},
 
-		if ( ! token ) {
-			e.stopImmediatePropagation();
-			e.preventDefault();
-			showError( modal, ERROR_MSG );
-			return;
-		}
-
-		// All valid — stash the token; ajaxSend will inject it
-		clearError( modal );
-		pendingMatchToken = token;
-	}, true ); /* capture = true */
+		/** Default error message string. */
+		errorMsg: ERROR_MSG
+	};
 
 	/* -----------------------------------------------------------------
 	 * Inject the stashed token into every match_salon_suites AJAX call.

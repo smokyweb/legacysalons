@@ -180,6 +180,8 @@
 		var errorEl = form.querySelector('[data-profession-services-error]');
 		if (errorEl) {
 			errorEl.textContent = message;
+			errorEl.style.color = 'red';
+			errorEl.style.fontSize = '13px';
 			errorEl.hidden = false;
 		}
 	}
@@ -588,6 +590,8 @@
 			wrap.appendChild(errorEl);
 		}
 		errorEl.textContent = message;
+		errorEl.style.color = 'red';
+		errorEl.style.fontSize = '13px';
 		errorEl.hidden = false;
 	}
 
@@ -703,9 +707,20 @@
 		form.addEventListener('submit', function (event) {
 			event.preventDefault();
 
-			// Validate all required fields inline first
+			// Step 1: Validate all required fields inline first
 			if (!validateSignupFields(form)) {
-				return;
+				return; // Field errors shown — do NOT check CAPTCHA yet
+			}
+
+			// Step 2: All fields valid — now check reCAPTCHA
+			if (window.lasRecaptcha && form.querySelector('.las-modal-recaptcha-wrap')) {
+				var recaptchaToken = window.lasRecaptcha.getToken(form);
+				if (!recaptchaToken) {
+					window.lasRecaptcha.showError(form, window.lasRecaptcha.errorMsg);
+					return;
+				}
+				window.lasRecaptcha.clearError(form);
+				window.lasRecaptcha.injectFormToken(form, recaptchaToken);
 			}
 
 			if (!ajaxUrl) {

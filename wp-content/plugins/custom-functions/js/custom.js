@@ -1257,11 +1257,22 @@ jQuery(document).ready(function ($) {
         var $submitBtn = $(this);
         var config = getPersonalModalConfig($submitBtn);
         var $modalScope = config.modal ? $(config.modal) : $submitBtn.closest('#suite-matching-personal-modal, #personalInfoModal');
+        var modalEl = $modalScope[0];
 
-        // Validate all required fields — CAPTCHA check runs first in modal-recaptcha.js
-        // but this also acts as a safety net when reCAPTCHA is not loaded
+        // Step 1: Validate all required fields first
         if (!validatePersonalModalFields($modalScope, config)) {
-            return;
+            return; // Field errors shown — do NOT check CAPTCHA yet
+        }
+
+        // Step 2: All fields valid — now check reCAPTCHA
+        if (window.lasRecaptcha && modalEl && modalEl.querySelector('.las-modal-recaptcha-wrap')) {
+            var recaptchaToken = window.lasRecaptcha.getToken(modalEl);
+            if (!recaptchaToken) {
+                window.lasRecaptcha.showError(modalEl, window.lasRecaptcha.errorMsg);
+                return;
+            }
+            window.lasRecaptcha.clearError(modalEl);
+            window.lasRecaptcha.setPendingToken(recaptchaToken);
         }
 
         var $name        = $modalScope.find(config.name);
