@@ -560,6 +560,7 @@
 			return;
 		}
 		input.classList.remove('is-invalid');
+		input.style.removeProperty('border');
 		input.setCustomValidity('');
 		var wrap = getPhoneFieldWrap(input);
 		if (!wrap) {
@@ -577,6 +578,7 @@
 			return;
 		}
 		input.classList.add('is-invalid');
+		input.style.setProperty('border', '1px solid red', 'important');
 		input.setCustomValidity(message);
 		var wrap = getPhoneFieldWrap(input);
 		if (!wrap) {
