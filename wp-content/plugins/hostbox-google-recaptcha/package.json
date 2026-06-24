@@ -1,0 +1,16 @@
+{
+  "name": "hostbox-google-recaptcha",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "wp-scripts start /inc/assets/jsx/src/modal.js --output-path=./inc/assets/jsx/build",
+    "build": "wp-scripts build /inc/assets/jsx/src/modal.js --output-path=./inc/assets/jsx/build",
+    "i18n": "wp i18n make-pot . languages/hostbox-recaptcha.pot --slug=hostbox-google-recaptcha --domain=hostbox-google-recaptcha"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@wordpress/scripts": "^30.9.0"
+  }
+}

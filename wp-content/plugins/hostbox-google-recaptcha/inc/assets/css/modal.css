@@ -1,0 +1,139 @@
+.wp-modal {
+  width: 312px;
+}
+
+.wp-modal picture > img {
+  display: block;
+  max-width: 100%;
+  -o-object-fit: cover;
+  object-fit: cover;
+}
+
+.wp-modal p:last-child {
+  margin-bottom: 0;
+}
+
+.wp-modal .components-radio-control__option:not(:last-child) {
+  margin-bottom: 13px;
+}
+
+.wp-modal__footer {
+  margin-top: 24px;
+}
+
+.wp-modal__footer-button-group {
+  display: flex;
+}
+
+.wp-modal__footer-button-group .components-button {
+  flex: 1 0 auto;
+  justify-content: center;
+}
+
+.wp-modal__footer-button-group .components-button + .components-button {
+  margin-left: 10px;
+}
+
+.components-modal__frame.components-guide.wp-modal {
+  height: auto;
+  max-height: 90vh;
+}
+
+.wp-modal.wp-modal--deactivate label {
+  display: block;
+  margin: 0 0 3px;
+}
+
+.wp-modal.wp-modal--deactivate label:not(:last-child) {
+  margin: 0 0 5px;
+}
+
+.wp-modal.wp-modal--deactivate .components-modal__content {
+  padding-bottom: 32px;
+}
+
+.wp-modal--onboarding,
+.wp-modal--upgrade {
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.wp-modal--onboarding .components-guide__page,
+.wp-modal--upgrade .components-guide__page {
+  justify-content: flex-start;
+}
+
+.wp-modal--onboarding .wp-modal__header,
+.wp-modal--onboarding .wp-modal__body,
+.wp-modal--upgrade .wp-modal__header,
+.wp-modal--upgrade .wp-modal__body {
+  padding: 16px 32px 0;
+}
+
+.wp-modal--onboarding .wp-modal__body,
+.wp-modal--upgrade .wp-modal__body {
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+}
+
+.wp-modal--onboarding img,
+.wp-modal--upgrade img {
+  display: block;
+}
+
+.wp-modal--onboarding h1,
+.wp-modal--upgrade h1 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+    "Helvetica Neue", sans-serif;
+  font-size: 24px;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+}
+
+.wp-modal--upgrade h1 {
+  margin-bottom: 0;
+}
+
+.wp-modal--onboarding label {
+  display: block;
+  margin: 0 0 4px;
+}
+
+.wp-modal--onboarding .wp-modal__header p,
+.wp-modal--onboarding .wp-modal__body p,
+.wp-modal--upgrade .wp-modal__header p,
+.wp-modal--upgrade .wp-modal__body p {
+  margin: 0;
+}
+
+.wp-modal--onboarding .wp-modal-radio-label {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.wp-modal--upgrade .wp-modal__body ul {
+  margin: 16px 0;
+  list-style: disc inside;
+}
+
+.wp-modal--onboarding .components-base-control__field .components-button,
+.wp-modal--upgrade .components-base-control__field .components-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.wp-modal--upgrade .components-base-control__field .components-button.is-primary {
+  margin-bottom: 10px;
+}
+
+.wp-modal--onboarding .components-guide__footer,
+.wp-modal--upgrade .components-guide__footer {
+  display: none;
+}
+
+.wp-modal--onboarding .wp-modal__footer,
+.wp-modal--upgrade .wp-modal__footer {
+  padding: 0 32px 32px;
+}

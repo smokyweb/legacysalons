@@ -1745,6 +1745,21 @@
         }
     }
     @media screen and (min-width: 768px) and (max-width: 1199px){
+		.fl-node-ymuapfjc4ht5{
+			max-width: 95% !important;
+		}
+		.containerwe{
+			width: 100%!important;
+		}
+		.signup-a-suite-form, .signup-a-suite-subheading{
+			max-width: 100%!important;
+		}
+		.signup-a-suite-modal.is-open{
+			width: 768px;
+		}
+		.signup-a-suite-modal__body .right {
+			display: none;
+		}
 		.suite-grid-center .col-lg-2 {
 			min-width: 50%;
 		}
@@ -1831,7 +1846,7 @@
 		#rmp_menu_trigger-1288 {
 			display: block;
 			right: 12px;
-			top: 67px;
+			top: 95px;
 			position: absolute;
 		}
 		div#heroContent .fl-col-content {
@@ -4052,6 +4067,7 @@
     .labelWrap label {
         display: flex;
         gap: 10px;
+		align-items: flex-start;
     }
     .labelWrap {
         display: flex;
@@ -5060,9 +5076,9 @@ body.page-signup-a-suite #fl-main-content {
     min-height: 46px;
     max-height: 46px;
     padding: 0 36px 0 14px;
-    border: 1px solid #000 !important;
+    border: none;
     border-radius: 7px;
-    background-color: #fff;
+    background-color: #f8f8f8;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23757575' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
@@ -5076,13 +5092,15 @@ body.page-signup-a-suite #fl-main-content {
     -webkit-tap-highlight-color: transparent;
     box-shadow: none;
     outline: none;
+	border: 1px solid #9b9b9b !important;
 }
 
+.signup-a-suite-multi-select__trigger:hover,
 .signup-a-suite-multi-select__trigger:focus,
 .signup-a-suite-multi-select__trigger:focus-visible,
 .signup-a-suite-multi-select__trigger:active,
 .signup-a-suite-multi-select.is-open .signup-a-suite-multi-select__trigger {
-    background-color: #fff;
+    background-color: #ececec;
     color: #242424;
     outline: none;
     box-shadow: none;
@@ -5246,7 +5264,7 @@ body.page-signup-a-suite #fl-main-content {
 }
 
 .signup-a-suite-field--services.is-invalid .signup-a-suite-multi-select__trigger {
-    box-shadow: inset 0 0 0 2px #d63638;
+    box-shadow: inset 0 0 0 1px #d63638;
 }
 
 @media (max-width: 767px) {
@@ -5349,6 +5367,7 @@ a.suite-image-wrap:focus .video-thumbnail {
     }
     #topbar .notice_close {
         cursor: pointer;
+		display: none!important;
     }
     
     body.signup-a-suite-modal-open #topbar,
@@ -5749,7 +5768,7 @@ body.loftloader-loaded #loftloader-wrapper {
     position: relative;
     width: 100%;
     z-index: 1;
-    max-width: 1024px;
+    max-width: 1100px;
     max-height: calc(100vh - 48px);
     overflow: auto;
     background: #fff5f1;
@@ -5918,11 +5937,12 @@ body.signup-a-suite-modal-open {
     }
 
     .signup-a-suite-modal__header {
-        padding: 16px 16px 0;
+        padding: 0px 16px 0;
     }
 
     .signup-a-suite-modal__body {
         padding: 0 16px 16px;
+		justify-content: center;
     }
 
     .signup-a-suite-modal__close {
@@ -5931,7 +5951,7 @@ body.signup-a-suite-modal-open {
     }
 
     .signup-a-suite-modal .signup-a-suite-heading {
-        font-size: 1.45rem;
+        font-size: 2.7rem;
     }
 
     .signup-a-suite-discount-note {
@@ -6010,7 +6030,7 @@ button.is-active .responsive-menu-pro-inner,button.is-active .responsive-menu-pr
     gap: 24px;
 }
 .signup-a-suite-modal__body .left {
-    min-width: 55%;
+    min-width: 50%;
 }
 .gridWrap {
     display: grid;
@@ -6719,4 +6739,37 @@ div#disclaimer h2 {
 div#disclaimer strong {
     font-size: 18px;
     color: #242424;
+}
+.containerwe .wpcf7-response-output {
+    color: #ff6271!important;
+    font-size: 14px;
+}
+.hostbox-recaptcha-error:not(:empty) {
+    display: block;
+    font-size: 14px;
+    color: #ff6271!important;
+}
+body.page-id-18 .hostbox-recaptcha-error:not(:empty) {
+    display: block;
+    font-size: 14px;
+    color: #ff6271!important;
+}
+body.page-id-18 .wpcf7-not-valid-tip{
+    color: #ff6271!important;
+}
+span.close-modal{
+    position: absolute;
+    right: 20px;
+    font-size: 31px;
+    top: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+span.error-msg {
+    color: #d93025;
+    position: relative;
+    bottom: 4px;
+    display: block;
+    width: 100%;
+    clear: both;
 }
