@@ -113,9 +113,16 @@
 	color: #333;
 	font-size: 24px;
 	line-height: 1;
-	cursor: pointer;
+	cursor: pointer !important;
 	transition: background 0.2s ease, color 0.2s ease;
 	user-select: none;
+}
+
+/* Force pointer on all child elements inside the close button */
+.suite-matching-personal-modal__close *,
+#personalInfoModal .close-modal * {
+	cursor: pointer !important;
+	pointer-events: none;
 }
 
 .suite-matching-personal-modal__close:hover,
@@ -125,5 +132,5 @@
 	background: rgba(0, 0, 0, 0.18);
 	color: #111;
 	outline: none;
-	cursor: pointer;
+	cursor: pointer !important;
 }
