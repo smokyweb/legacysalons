@@ -1,6 +1,30 @@
 <?php
     if (!defined('ABSPATH')) exit;
 
+    // -------------------------------------------------------------------------
+    // Legacy Location URL Redirects
+    // Redirects old /our_locations/<slug>/ and short slug URLs to the
+    // Salon Professionals page with the correct stylist_location filter.
+    // Added: 2026-07-08
+    // -------------------------------------------------------------------------
+    function legacy_location_url_redirects() {
+        $request = trim( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+
+        $redirect_map = array(
+            'our_locations/cooper'    => '/salon-professionals/?stylist_location=cooper',
+            'our_locations/cooper/'   => '/salon-professionals/?stylist_location=cooper',
+            'village'                 => '/salon-professionals/?stylist_location=little_road',
+            'village/'                => '/salon-professionals/?stylist_location=little_road',
+        );
+
+        if ( isset( $redirect_map[ $request ] ) ) {
+            wp_redirect( home_url( $redirect_map[ $request ] ), 301 );
+            exit;
+        }
+    }
+    add_action( 'template_redirect', 'legacy_location_url_redirects' );
+
+
     function add_ajaxurl_to_frontend() {
         ?>
         <script>
